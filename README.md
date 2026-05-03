@@ -156,6 +156,12 @@ Check publication readiness:
 uv run python scripts/check_publication_readiness.py --results-dir results/<run_id>
 ```
 
+Estimate prompt counts needed for a target confidence interval width:
+
+```bash
+uv run python scripts/plan_ci_power.py --results-dir results/<run_id> --target-ci-width 0.08
+```
+
 Export a small blinded human-audit sheet:
 
 ```bash
