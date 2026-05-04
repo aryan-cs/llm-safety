@@ -7,6 +7,7 @@ from report_h200_status import (
     _artifact_status,
     _gpu_gate_likely_blocked,
     _is_status_probe_process,
+    _nvidia_device_holders,
     _parse_compute_app_line,
     _parse_gpu_query_line,
     _run,
@@ -46,6 +47,18 @@ def test_status_probe_process_filter_skips_monitoring_shells() -> None:
     assert not _is_status_probe_process("bash scripts/wait_for_h200_gpu.sh")
 
 
+def test_nvidia_device_holders_scan_proc_fd_links(tmp_path: Path) -> None:
+    process_dir = tmp_path / "123"
+    fd_dir = process_dir / "fd"
+    fd_dir.mkdir(parents=True)
+    (process_dir / "cmdline").write_bytes(b"python\0train.py\0")
+    (fd_dir / "4").symlink_to("/dev/nvidia0")
+
+    assert _nvidia_device_holders(tmp_path) == [
+        {"pid": "123", "command": "python train.py"}
+    ]
+
+
 def test_run_reports_missing_executable() -> None:
     result = _run(["definitely_missing_h200_status_binary"], cwd=None)
 
@@ -80,6 +93,7 @@ def test_render_markdown_summarizes_blocked_launcher() -> None:
                 "memory_total_mib": 143771,
                 "utilization_pct": 100,
                 "compute_apps": [],
+                "device_holders": [],
                 "pmon": "# gpu pid type sm mem\n0 - - - -",
             },
             "processes": [
@@ -97,5 +111,6 @@ def test_render_markdown_summarizes_blocked_launcher() -> None:
     assert "GPU gate likely blocked: `true`" in text
     assert "none reported by `nvidia-smi --query-compute-apps`" in text
     assert "Process Monitor Snapshot" in text
+    assert "none found by scanning local `/proc/*/fd`" in text
     assert "release or restart the notebook allocation" in text
     assert "`results/h200_qwen_full_sweep`: missing" in text

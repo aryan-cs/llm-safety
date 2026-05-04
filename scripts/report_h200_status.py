@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import argparse
+import os
 import subprocess
 from pathlib import Path
 from typing import Any
@@ -112,6 +113,13 @@ def render_markdown(status: dict[str, Any]) -> str:
         pmon = str(gpu.get("pmon") or "").strip()
         if pmon:
             lines.extend(["", "### Process Monitor Snapshot", "", "```text", pmon, "```"])
+        device_holders = gpu.get("device_holders") or []
+        lines.extend(["", "### Local NVIDIA Device Holders", ""])
+        if device_holders:
+            for holder in device_holders:
+                lines.append(f"- pid `{holder['pid']}`: `{holder['command']}`")
+        else:
+            lines.append("- none found by scanning local `/proc/*/fd` for `/dev/nvidia*`")
         if status.get("hidden_gpu_context_likely"):
             lines.extend(
                 [
@@ -168,6 +176,7 @@ def _gpu_status() -> dict[str, Any]:
     pmon = _run(["nvidia-smi", "pmon", "-c", "1"], cwd=None)
     parsed["pmon"] = pmon.stdout.strip() if pmon.returncode == 0 else pmon.stderr.strip()
     parsed["compute_apps"] = _compute_apps()
+    parsed["device_holders"] = _nvidia_device_holders()
     return parsed
 
 
@@ -198,6 +207,8 @@ def _hidden_gpu_context_likely(gpu: dict[str, Any]) -> bool:
     if not _gpu_gate_likely_blocked(gpu):
         return False
     if gpu.get("compute_apps"):
+        return False
+    if gpu.get("device_holders"):
         return False
     return "No running processes found" in str(gpu.get("pmon") or "") or _pmon_has_no_process_rows(
         str(gpu.get("pmon") or "")
@@ -243,6 +254,52 @@ def _parse_compute_app_line(line: str) -> dict[str, Any] | None:
     except ValueError:
         return None
     return {"pid": parts[0], "process_name": parts[1], "used_memory_mib": used_memory_mib}
+
+
+def _nvidia_device_holders(
+    proc_root: Path = Path("/proc"),
+    *,
+    limit: int = 25,
+) -> list[dict[str, str]]:
+    holders = []
+    for process_dir in sorted(proc_root.glob("[0-9]*"), key=lambda path: int(path.name)):
+        fd_dir = process_dir / "fd"
+        if not fd_dir.exists():
+            continue
+        try:
+            fds = list(fd_dir.iterdir())
+        except OSError:
+            continue
+        if not any(_fd_points_to_nvidia_device(fd) for fd in fds):
+            continue
+        holders.append({"pid": process_dir.name, "command": _proc_command(process_dir)})
+        if len(holders) >= limit:
+            break
+    return holders
+
+
+def _fd_points_to_nvidia_device(fd: Path) -> bool:
+    try:
+        target = os.readlink(fd)
+    except OSError:
+        return False
+    return target.startswith("/dev/nvidia")
+
+
+def _proc_command(process_dir: Path) -> str:
+    try:
+        raw = (process_dir / "cmdline").read_bytes()
+    except OSError:
+        raw = b""
+    command = " ".join(
+        part.decode("utf-8", errors="replace") for part in raw.split(b"\0") if part
+    )
+    if command:
+        return command
+    try:
+        return (process_dir / "comm").read_text(encoding="utf-8", errors="replace").strip()
+    except OSError:
+        return "<unknown>"
 
 
 def _process_rows() -> list[dict[str, str]]:
