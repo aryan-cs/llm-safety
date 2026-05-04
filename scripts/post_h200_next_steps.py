@@ -12,6 +12,22 @@ from report_publication_status import publication_status
 
 from cache_safety_erasure.utils.io import write_json
 
+_DERIVED_RESULT_ARTIFACTS = {"metrics.json", "figures/manifest.json"}
+_DERIVED_READINESS_EXACT_FAILURES = {
+    "missing generated PNG figures",
+    "missing figures/manifest.json",
+    "figures manifest has no figure entries",
+    "figures manifest contains non-object entry",
+    "causal patch runs require causal_restoration_fraction figure",
+}
+_DERIVED_READINESS_PREFIXES = (
+    "figure `",
+    "figures manifest ",
+    "figures_manifest_",
+    "invalid figures/manifest.json:",
+    "missing required figure `",
+)
+
 
 def main() -> None:
     parser = argparse.ArgumentParser(
@@ -156,14 +172,19 @@ def _raw_result_available(artifact: object) -> bool:
     if not isinstance(artifact, dict):
         return False
     missing = set(str(item) for item in artifact.get("missing", []))
-    tolerated_missing = {"metrics.json", "figures/manifest.json"}
-    if missing - tolerated_missing:
+    if missing - _DERIVED_RESULT_ARTIFACTS:
         return False
     disqualifiers = artifact.get("disqualifiers", [])
     if disqualifiers:
         return False
     readiness_failures = [str(item) for item in artifact.get("readiness_failures", [])]
-    return not any(failure.startswith("generation_row_count=") for failure in readiness_failures)
+    return all(_raw_readiness_failure_is_derived(failure) for failure in readiness_failures)
+
+
+def _raw_readiness_failure_is_derived(failure: str) -> bool:
+    if failure in _DERIVED_READINESS_EXACT_FAILURES:
+        return True
+    return failure.startswith(_DERIVED_READINESS_PREFIXES)
 
 
 def _blocker_details(status: dict[str, Any]) -> dict[str, list[str]]:

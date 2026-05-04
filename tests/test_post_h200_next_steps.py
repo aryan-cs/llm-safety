@@ -66,6 +66,178 @@ def test_post_h200_next_steps_prepares_fetched_raw_results_before_audits() -> No
     assert "prepare_after_h200_fetch.sh" in rendered
 
 
+def test_post_h200_next_steps_prepares_raw_results_with_only_derived_figure_failures() -> None:
+    report = post_h200_next_steps(
+        {
+            "publication_ready": False,
+            "blockers": ["primary_results_complete", "causal_results_complete"],
+            "gates": {
+                "primary_results_complete": False,
+                "causal_results_complete": False,
+                "primary_human_audit_complete": False,
+                "causal_human_audit_complete": False,
+                "claim_assessment_passed": False,
+                "paper_pdf_exists": True,
+                "arxiv_bundle_ready": False,
+            },
+            "primary_results": {
+                "missing": ["metrics.json", "figures/manifest.json"],
+                "disqualifiers": [],
+                "readiness_failures": ["missing figures/manifest.json"],
+            },
+            "causal_results": {
+                "missing": ["metrics.json"],
+                "disqualifiers": [],
+                "readiness_failures": [
+                    "figures manifest source hash mismatch for `metrics.json`",
+                    "missing required figure `causal_restoration_flow`",
+                ],
+            },
+        }
+    )
+
+    assert report["next_step"] == "prepare_after_h200_fetch"
+    assert report["steps"][0]["state"] == "complete"
+    assert report["steps"][1]["state"] == "ready"
+
+
+def test_post_h200_next_steps_keeps_provenance_failures_on_h200_results() -> None:
+    report = post_h200_next_steps(
+        {
+            "publication_ready": False,
+            "blockers": ["primary_results_complete", "causal_results_complete"],
+            "gates": {
+                "primary_results_complete": False,
+                "causal_results_complete": False,
+                "primary_human_audit_complete": False,
+                "causal_human_audit_complete": False,
+                "claim_assessment_passed": False,
+                "paper_pdf_exists": True,
+                "arxiv_bundle_ready": False,
+            },
+            "primary_results": {
+                "missing": ["metrics.json", "figures/manifest.json"],
+                "disqualifiers": [],
+                "readiness_failures": ["public_prompts_lack_dataset_provenance:4"],
+            },
+            "causal_results": {
+                "missing": ["metrics.json", "figures/manifest.json"],
+                "disqualifiers": [],
+                "readiness_failures": [],
+            },
+        }
+    )
+
+    assert report["next_step"] == "complete_h200_results"
+    assert report["steps"][0]["state"] == "ready"
+    assert report["steps"][1]["state"] == "blocked"
+
+
+def test_post_h200_next_steps_keeps_row_count_failures_on_h200_results() -> None:
+    report = post_h200_next_steps(
+        {
+            "publication_ready": False,
+            "blockers": ["primary_results_complete", "causal_results_complete"],
+            "gates": {
+                "primary_results_complete": False,
+                "causal_results_complete": False,
+                "primary_human_audit_complete": False,
+                "causal_human_audit_complete": False,
+                "claim_assessment_passed": False,
+                "paper_pdf_exists": True,
+                "arxiv_bundle_ready": False,
+            },
+            "primary_results": {
+                "missing": ["metrics.json", "figures/manifest.json"],
+                "disqualifiers": [],
+                "readiness_failures": ["generation_row_count=12; expected=99"],
+            },
+            "causal_results": {
+                "missing": ["metrics.json", "figures/manifest.json"],
+                "disqualifiers": [],
+                "readiness_failures": [],
+            },
+        }
+    )
+
+    assert report["next_step"] == "complete_h200_results"
+    assert report["steps"][0]["state"] == "ready"
+    assert report["steps"][1]["state"] == "blocked"
+
+
+def test_post_h200_next_steps_keeps_generation_matrix_failures_on_h200_results() -> None:
+    report = post_h200_next_steps(
+        {
+            "publication_ready": False,
+            "blockers": ["primary_results_complete", "causal_results_complete"],
+            "gates": {
+                "primary_results_complete": False,
+                "causal_results_complete": False,
+                "primary_human_audit_complete": False,
+                "causal_human_audit_complete": False,
+                "claim_assessment_passed": False,
+                "paper_pdf_exists": True,
+                "arxiv_bundle_ready": False,
+            },
+            "primary_results": {
+                "missing": ["metrics.json", "figures/manifest.json"],
+                "disqualifiers": [],
+                "readiness_failures": [
+                    "generation_matrix_missing_rows:12; "
+                    "first=suite=public_refusal_safety,prompt_id=advbench_000001,"
+                    "policy=policy_pinned,seed=17"
+                ],
+            },
+            "causal_results": {
+                "missing": ["metrics.json", "figures/manifest.json"],
+                "disqualifiers": [],
+                "readiness_failures": [],
+            },
+        }
+    )
+
+    assert report["next_step"] == "complete_h200_results"
+    assert report["steps"][0]["state"] == "ready"
+    assert report["steps"][1]["state"] == "blocked"
+
+
+def test_post_h200_next_steps_keeps_profile_contract_failures_on_h200_results() -> None:
+    report = post_h200_next_steps(
+        {
+            "publication_ready": False,
+            "blockers": ["primary_results_complete", "causal_results_complete"],
+            "gates": {
+                "primary_results_complete": False,
+                "causal_results_complete": False,
+                "primary_human_audit_complete": False,
+                "causal_human_audit_complete": False,
+                "claim_assessment_passed": False,
+                "paper_pdf_exists": True,
+                "arxiv_bundle_ready": False,
+            },
+            "primary_results": {
+                "missing": ["metrics.json", "figures/manifest.json"],
+                "disqualifiers": [],
+                "readiness_failures": [
+                    "missing_required_policy:policy_pinned",
+                    "suite_prompt_count:public_refusal_safety=120; required=600",
+                    "model_id='Qwen/Qwen2.5-7B-Instruct'; "
+                    "expected='Qwen/Qwen2.5-14B-Instruct'",
+                ],
+            },
+            "causal_results": {
+                "missing": ["metrics.json", "figures/manifest.json"],
+                "disqualifiers": [],
+                "readiness_failures": [],
+            },
+        }
+    )
+
+    assert report["next_step"] == "complete_h200_results"
+    assert report["steps"][0]["state"] == "ready"
+    assert report["steps"][1]["state"] == "blocked"
+
+
 def test_post_h200_next_steps_surfaces_artifact_specific_blockers() -> None:
     report = post_h200_next_steps(
         {
