@@ -8,6 +8,7 @@ from package_arxiv_submission import (
     GENERATED_DIRS,
     OPTIONAL_GENERATED_DIRS,
     REQUIRED_GENERATED_DIRS,
+    _is_pdf,
     _missing_inputs,
     _rewrite_main_tex_for_arxiv,
 )
@@ -111,6 +112,16 @@ def test_arxiv_packager_treats_missing_inputs_as_publication_blockers() -> None:
         "paper/generated/missing",
         "paper/audit/missing",
     ]
+
+
+def test_arxiv_packager_rejects_malformed_figure_pdfs(tmp_path: Path) -> None:
+    fake_pdf = tmp_path / "figure.pdf"
+    realish_pdf = tmp_path / "realish.pdf"
+    fake_pdf.write_text("not a pdf", encoding="utf-8")
+    realish_pdf.write_bytes(b"%PDF-1.7\n")
+
+    assert _is_pdf(fake_pdf) is False
+    assert _is_pdf(realish_pdf) is True
 
 
 def test_latex_placeholder_checker_reports_missing_artifacts(tmp_path: Path) -> None:

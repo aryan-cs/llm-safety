@@ -5,7 +5,7 @@ import pytest
 
 sys.path.insert(0, str(Path("scripts").resolve()))
 
-from check_publication_readiness import _check_figure_manifest
+from check_publication_readiness import _check_figure_manifest, _figure_artifact_failure
 from make_figures import (
     _phase_portrait_rows,
     _prompt_effect_constellation_rows,
@@ -264,6 +264,63 @@ def test_figure_manifest_rejects_stale_hash(tmp_path: Path) -> None:
     _check_figure_manifest(figures_dir, results_dir, failures, require_causal_patch=False)
 
     assert any("stale png hash" in failure for failure in failures)
+
+
+def test_figure_manifest_rejects_malformed_visual_artifacts(tmp_path: Path) -> None:
+    from cache_safety_erasure.utils.io import file_sha256, write_json
+
+    results_dir = tmp_path / "results"
+    figures_dir = results_dir / "figures"
+    figures_dir.mkdir(parents=True)
+    for name in ["manifest.json", "generations.jsonl", "metrics.json", "cache_stats.parquet"]:
+        (results_dir / name).write_text(name, encoding="utf-8")
+    for suffix in ["png", "svg", "pdf", "csv"]:
+        (figures_dir / f"figure.{suffix}").write_text("not a valid figure\n", encoding="utf-8")
+    write_json(
+        figures_dir / "manifest.json",
+        {
+            "source_artifacts": {
+                name: {"sha256": file_sha256(results_dir / name)}
+                for name in ["manifest.json", "generations.jsonl", "metrics.json", "cache_stats.parquet"]
+            },
+            "figures": [
+                {
+                    "name": "figure",
+                    "png": str(figures_dir / "figure.png"),
+                    "png_sha256": file_sha256(figures_dir / "figure.png"),
+                    "svg": str(figures_dir / "figure.svg"),
+                    "svg_sha256": file_sha256(figures_dir / "figure.svg"),
+                    "pdf": str(figures_dir / "figure.pdf"),
+                    "pdf_sha256": file_sha256(figures_dir / "figure.pdf"),
+                    "data_csv": str(figures_dir / "figure.csv"),
+                    "data_csv_sha256": file_sha256(figures_dir / "figure.csv"),
+                }
+            ],
+        },
+    )
+    failures: list[str] = []
+
+    _check_figure_manifest(figures_dir, results_dir, failures, require_causal_patch=False)
+
+    assert "figure `figure` has invalid png: missing PNG signature" in failures
+    assert "figure `figure` has invalid svg: missing SVG root" in failures
+    assert "figure `figure` has invalid pdf: missing PDF signature" in failures
+
+
+def test_figure_artifact_signature_validator_accepts_real_headers(tmp_path: Path) -> None:
+    png = tmp_path / "figure.png"
+    pdf = tmp_path / "figure.pdf"
+    svg = tmp_path / "figure.svg"
+    csv = tmp_path / "figure.csv"
+    png.write_bytes(b"\x89PNG\r\n\x1a\npayload")
+    pdf.write_bytes(b"%PDF-1.7\npayload")
+    svg.write_text('<?xml version="1.0"?><svg xmlns="http://www.w3.org/2000/svg"/>', encoding="utf-8")
+    csv.write_text("column\nvalue\n", encoding="utf-8")
+
+    assert _figure_artifact_failure("png", png) == ""
+    assert _figure_artifact_failure("pdf", pdf) == ""
+    assert _figure_artifact_failure("svg", svg) == ""
+    assert _figure_artifact_failure("data_csv", csv) == ""
 
 
 def test_figure_manifest_requires_named_figures(tmp_path: Path) -> None:

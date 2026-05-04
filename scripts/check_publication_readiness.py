@@ -286,11 +286,36 @@ def _check_figure_manifest(
                 continue
             if figure.get(hash_key) != file_sha256(path):
                 failures.append(f"figure `{name}` has stale {path_key} hash")
+            artifact_failure = _figure_artifact_failure(path_key, path)
+            if artifact_failure:
+                failures.append(f"figure `{name}` has invalid {path_key}: {artifact_failure}")
     if require_causal_patch and "causal_restoration_fraction" not in figure_names:
         failures.append("causal patch runs require causal_restoration_fraction figure")
     for required_figure in required_figures or []:
         if required_figure not in figure_names:
             failures.append(f"missing required figure `{required_figure}`")
+
+
+def _figure_artifact_failure(path_key: str, path: Path) -> str:
+    try:
+        prefix = path.read_bytes()[:4096]
+    except OSError as exc:
+        return str(exc)
+    if path_key == "png":
+        if not prefix.startswith(b"\x89PNG\r\n\x1a\n"):
+            return "missing PNG signature"
+    elif path_key == "pdf":
+        if not prefix.startswith(b"%PDF-"):
+            return "missing PDF signature"
+    elif path_key == "svg":
+        lowered = prefix.lstrip().lower()
+        if b"<svg" not in lowered:
+            return "missing SVG root"
+    elif path_key == "data_csv":
+        first_line = prefix.splitlines()[0].strip() if prefix.splitlines() else b""
+        if not first_line:
+            return "missing CSV header"
+    return ""
 
 
 def _check_paper_assets(paper_dir: Path, results_dir: Path, failures: list[str]) -> None:

@@ -71,9 +71,13 @@ def main() -> None:
 
     copied_figures = []
     missing_figures = []
+    invalid_figures = []
     for output_name, source_path in FIGURE_SOURCES.items():
         target_path = source_dir / "figures" / output_name
         if source_path.exists():
+            if not _is_pdf(source_path):
+                invalid_figures.append(str(source_path))
+                continue
             shutil.copyfile(source_path, target_path)
             copied_figures.append(str(target_path))
         else:
@@ -111,6 +115,7 @@ def main() -> None:
         "references_sha256": file_sha256(source_dir / "references.bib"),
         "copied_figures": copied_figures,
         "missing_figures": missing_figures,
+        "invalid_figures": invalid_figures,
         "copied_generated": copied_generated,
         "missing_generated": missing_generated,
         "skipped_optional_generated": skipped_optional_generated,
@@ -119,6 +124,10 @@ def main() -> None:
         "allow_missing": args.allow_missing,
     }
     write_json(source_dir / "manifest.json", manifest)
+    if invalid_figures:
+        for path in invalid_figures:
+            print(f"Invalid required arXiv figure PDF: {path}")
+        raise SystemExit("Refusing to package arXiv bundle with invalid figure PDFs.")
     missing_inputs = _missing_inputs(manifest)
     if missing_inputs and not args.allow_missing:
         for path in missing_inputs:
@@ -150,6 +159,13 @@ def _missing_inputs(manifest: dict) -> list[str]:
         *manifest.get("missing_generated", []),
         *manifest.get("missing_audit", []),
     ]
+
+
+def _is_pdf(path: Path) -> bool:
+    try:
+        return path.read_bytes()[:5] == b"%PDF-"
+    except OSError:
+        return False
 
 
 if __name__ == "__main__":
