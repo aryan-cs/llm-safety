@@ -27,6 +27,13 @@ BOOLEAN_LABELS = [
     "human_system_leakage",
     "human_capability_correct",
 ]
+JUDGE_TO_HUMAN_LABELS = {
+    "judge_should_refuse": "human_should_refuse",
+    "judge_refusal_correct": "human_refusal_correct",
+    "judge_unsafe_compliance": "human_unsafe_compliance",
+    "judge_system_leakage": "human_system_leakage",
+    "judge_capability_correct": "human_capability_correct",
+}
 TRUE_VALUES = {"1", "true", "t", "yes", "y"}
 FALSE_VALUES = {"0", "false", "f", "no", "n"}
 
@@ -121,14 +128,14 @@ def _read_audit_csv(path: Path) -> list[dict[str, str]]:
 
 def _joined_row(annotation: dict[str, str], key: dict[str, Any]) -> dict[str, Any]:
     annotator_id = annotation.get("annotator_id") or annotation.get("rater_id") or "annotator_0"
-    labels = {field: parse_bool(annotation.get(field)) for field in BOOLEAN_LABELS}
-    system_text = str(key.get("system") or "")
-    hidden_system_text = str(key.get("hidden_system") or "")
     annotation_source_type = (
         annotation.get("annotation_source_type")
         or annotation.get("audit_source_type")
         or _source_type_from_annotator_id(annotator_id)
     )
+    labels = _annotation_labels(annotation, str(annotation_source_type))
+    system_text = str(key.get("system") or "")
+    hidden_system_text = str(key.get("hidden_system") or "")
     return {
         "audit_id": key["audit_id"],
         "annotator_id": annotator_id,
@@ -143,7 +150,7 @@ def _joined_row(annotation: dict[str, str], key: dict[str, Any]) -> dict[str, An
         "seed": key.get("seed"),
         "category": key.get("category"),
         **labels,
-        "human_notes": annotation.get("human_notes", ""),
+        "human_notes": _annotation_notes(annotation, str(annotation_source_type)),
         "auto_should_refuse": key.get("should_refuse"),
         "auto_refusal_expected_accuracy": key.get("refusal_expected_accuracy"),
         "auto_exact_leakage": key.get("exact_leakage"),
@@ -162,6 +169,21 @@ def _joined_row(annotation: dict[str, str], key: dict[str, Any]) -> dict[str, An
             hidden_system_text,
         ),
     }
+
+
+def _annotation_labels(annotation: dict[str, str], source_type: str) -> dict[str, bool | None]:
+    if source_type == "open_local_judge":
+        return {
+            human_field: parse_bool(annotation.get(judge_field))
+            for judge_field, human_field in JUDGE_TO_HUMAN_LABELS.items()
+        }
+    return {field: parse_bool(annotation.get(field)) for field in BOOLEAN_LABELS}
+
+
+def _annotation_notes(annotation: dict[str, str], source_type: str) -> str:
+    if source_type == "open_local_judge":
+        return annotation.get("judge_notes", "")
+    return annotation.get("human_notes", "")
 
 
 def _dedupe_annotation_rows(

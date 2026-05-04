@@ -5,29 +5,30 @@ from pathlib import Path
 sys.path.insert(0, str(Path("scripts").resolve()))
 
 from aggregate_human_audit import aggregate_human_audit, render_summary_latex
-from run_open_judge_audit import parse_judge_json
+from run_open_judge_audit import legacy_labels_from_judge, parse_judge_json
 
 
 def test_parse_open_judge_json_accepts_fenced_booleans() -> None:
     labels = parse_judge_json(
         """```json
         {
-          "human_should_refuse": true,
-          "human_refusal_correct": "no",
-          "human_unsafe_compliance": "yes",
-          "human_system_leakage": false,
-          "human_capability_correct": null,
-          "human_notes": "contains operational detail"
+          "judge_should_refuse": true,
+          "judge_refusal_correct": "no",
+          "judge_unsafe_compliance": "yes",
+          "judge_system_leakage": false,
+          "judge_capability_correct": null,
+          "judge_notes": "contains operational detail"
         }
         ```"""
     )
 
-    assert labels["human_should_refuse"] == "yes"
-    assert labels["human_refusal_correct"] == "no"
-    assert labels["human_unsafe_compliance"] == "yes"
-    assert labels["human_system_leakage"] == "no"
-    assert labels["human_capability_correct"] == ""
-    assert labels["human_notes"] == "contains operational detail"
+    assert labels["judge_should_refuse"] == "yes"
+    assert labels["judge_refusal_correct"] == "no"
+    assert labels["judge_unsafe_compliance"] == "yes"
+    assert labels["judge_system_leakage"] == "no"
+    assert labels["judge_capability_correct"] == ""
+    assert labels["judge_notes"] == "contains operational detail"
+    assert legacy_labels_from_judge(labels)["human_unsafe_compliance"] == "yes"
 
 
 def test_open_judge_audit_aggregation_is_not_rendered_as_human(tmp_path: Path) -> None:
@@ -52,6 +53,12 @@ def test_open_judge_audit_aggregation_is_not_rendered_as_human(tmp_path: Path) -
                 "annotation_source_type",
                 "open_judge_model_id",
                 "open_judge_prompt_sha256",
+                "judge_should_refuse",
+                "judge_refusal_correct",
+                "judge_unsafe_compliance",
+                "judge_system_leakage",
+                "judge_capability_correct",
+                "judge_notes",
                 "human_should_refuse",
                 "human_refusal_correct",
                 "human_unsafe_compliance",
@@ -69,10 +76,16 @@ def test_open_judge_audit_aggregation_is_not_rendered_as_human(tmp_path: Path) -
                     "annotation_source_type": "open_local_judge",
                     "open_judge_model_id": "Qwen/Qwen2.5-7B-Instruct",
                     "open_judge_prompt_sha256": "abc",
-                    "human_should_refuse": "yes",
-                    "human_refusal_correct": "yes",
-                    "human_unsafe_compliance": unsafe,
-                    "human_system_leakage": "no",
+                    "judge_should_refuse": "yes",
+                    "judge_refusal_correct": "yes",
+                    "judge_unsafe_compliance": unsafe,
+                    "judge_system_leakage": "no",
+                    "judge_capability_correct": "",
+                    "judge_notes": "",
+                    "human_should_refuse": "",
+                    "human_refusal_correct": "",
+                    "human_unsafe_compliance": "",
+                    "human_system_leakage": "",
                     "human_capability_correct": "",
                     "human_notes": "",
                 }
