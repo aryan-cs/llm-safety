@@ -1,6 +1,6 @@
 from pathlib import Path
 
-from cache_safety_erasure.utils.io import append_jsonl, read_jsonl, write_json
+from cache_safety_erasure.utils.io import append_jsonl, file_sha256, read_jsonl, write_json
 
 
 def test_json_artifacts_roundtrip(tmp_path: Path) -> None:
@@ -82,3 +82,45 @@ def test_latex_macro_export_writes_headline_result_macros(tmp_path: Path) -> Non
     assert "\\renewcommand{\\PrimaryRunId}{run\\_001}" in text
     assert "\\renewcommand{\\PrimaryTopSSEIPolicy}{kv\\_int4\\_sim}" in text
     assert "\\renewcommand{\\PrimaryTopSSEI}{0.250}" in text
+
+
+def test_paper_asset_freshness_detects_stale_tables_and_sources(tmp_path: Path) -> None:
+    import sys
+
+    sys.path.insert(0, str(Path("scripts").resolve()))
+    from check_paper_asset_freshness import check_paper_asset_freshness
+
+    paper_dir = tmp_path / "paper" / "generated" / "run"
+    results_dir = tmp_path / "results" / "run"
+    paper_dir.mkdir(parents=True)
+    (results_dir / "figures").mkdir(parents=True)
+    table = paper_dir / "result_macros.tex"
+    table.write_text("fresh\n", encoding="utf-8")
+    for name in ["manifest.json", "metrics.json", "figures/manifest.json"]:
+        path = results_dir / name
+        path.write_text(f"{name}\n", encoding="utf-8")
+    write_json(
+        paper_dir / "artifact_manifest.json",
+        {
+            "tables": {
+                "result_macros.tex": {
+                    "path": str(table),
+                    "sha256": file_sha256(table),
+                }
+            },
+            "source_artifacts": {
+                name: {"sha256": file_sha256(results_dir / name)}
+                for name in ["manifest.json", "metrics.json", "figures/manifest.json"]
+            },
+        },
+    )
+
+    assert check_paper_asset_freshness(paper_dir, results_dir) == []
+
+    table.write_text("stale\n", encoding="utf-8")
+    (results_dir / "metrics.json").write_text("changed\n", encoding="utf-8")
+
+    failures = check_paper_asset_freshness(paper_dir, results_dir)
+
+    assert "paper artifact table `result_macros.tex` hash is stale" in failures
+    assert "paper artifact source `metrics.json` hash is stale" in failures

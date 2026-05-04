@@ -141,6 +141,16 @@ def test_publication_artifact_builder_fails_without_real_results() -> None:
     assert "--required-figure causal_restoration_fraction" in script
 
 
+def test_complete_paper_build_checks_publication_status_before_latex() -> None:
+    script = Path("scripts/build_paper_pdf.sh").read_text(encoding="utf-8")
+
+    assert "scripts/check_latex_placeholders.py" in script
+    assert "scripts/check_paper_asset_freshness.py" in script
+    assert "scripts/report_publication_status.py" in script
+    assert "--allow-missing-paper-pdf" in script
+    assert "--fail-if-not-ready" in script
+
+
 def test_h200_scripts_use_composite_public_refusal_suite() -> None:
     for script_path in [
         Path("scripts/run_h200_sweep.sh"),

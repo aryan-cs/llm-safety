@@ -5,10 +5,21 @@ cd "$(dirname "$0")/.."
 
 src_dir="paper/latex"
 build_dir="paper/build"
+primary_results="${PRIMARY_RESULTS_DIR:-results/h200_qwen_full_sweep}"
+causal_results="${CAUSAL_RESULTS_DIR:-results/h200_causal_patch_qwen7b}"
+primary_paper_dir="${PRIMARY_PAPER_DIR:-paper/generated/h200_qwen_full_sweep}"
+causal_paper_dir="${CAUSAL_PAPER_DIR:-paper/generated/h200_causal_patch_qwen7b}"
 mkdir -p "$build_dir"
 
 if [[ "${REQUIRE_COMPLETE_PAPER:-0}" == "1" ]]; then
   uv run python scripts/check_latex_placeholders.py --tex "$src_dir/main.tex"
+  uv run python scripts/check_paper_asset_freshness.py \
+    --pair "$primary_paper_dir=$primary_results" \
+    --pair "$causal_paper_dir=$causal_results"
+  uv run python scripts/report_publication_status.py \
+    --paper-pdf "$build_dir/cache_mediated_safety_erasure.pdf" \
+    --allow-missing-paper-pdf \
+    --fail-if-not-ready
 fi
 
 if command -v tectonic >/dev/null 2>&1; then

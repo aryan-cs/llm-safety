@@ -64,6 +64,11 @@ def main() -> None:
         type=Path,
         default=Path("paper/cache_mediated_safety_erasure.pdf"),
     )
+    parser.add_argument(
+        "--allow-missing-paper-pdf",
+        action="store_true",
+        help="Permit a missing PDF when checking readiness before rebuilding the final PDF.",
+    )
     parser.add_argument("--output-json", type=Path, default=None)
     parser.add_argument("--output-md", type=Path, default=None)
     parser.add_argument("--fail-if-not-ready", action="store_true")
@@ -76,6 +81,7 @@ def main() -> None:
         causal_audit_dir=args.causal_audit_dir,
         claim_assessment_path=args.claim_assessment,
         paper_pdf=args.paper_pdf,
+        require_paper_pdf=not args.allow_missing_paper_pdf,
     )
     if args.output_json is not None:
         write_json(args.output_json, status)
@@ -95,6 +101,7 @@ def publication_status(
     causal_audit_dir: Path,
     claim_assessment_path: Path,
     paper_pdf: Path,
+    require_paper_pdf: bool = True,
 ) -> dict[str, Any]:
     primary = _run_status(primary_results_dir)
     causal = _run_status(causal_results_dir)
@@ -115,7 +122,7 @@ def publication_status(
         "primary_human_audit_complete": primary_audit["complete"],
         "causal_human_audit_complete": causal_audit["complete"],
         "claim_assessment_passed": claim_assessment["passed"],
-        "paper_pdf_exists": pdf["exists"],
+        "paper_pdf_exists": pdf["exists"] or not require_paper_pdf,
     }
     blockers = [gate for gate, passed in gates.items() if not passed]
     return {
@@ -129,6 +136,7 @@ def publication_status(
         "causal_human_audit": causal_audit,
         "claim_assessment": claim_assessment,
         "paper_pdf": pdf,
+        "paper_pdf_required": require_paper_pdf,
     }
 
 
