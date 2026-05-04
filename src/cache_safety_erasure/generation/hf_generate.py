@@ -182,8 +182,7 @@ def hf_generate(
                 decision.metadata.update(patch_metadata)
             next_token = _sample_next_token(outputs.logits[:, -1, :], generation_config)
 
-            partial_text = tokenizer.decode(generated_ids, skip_special_tokens=True)
-            if any(stop in partial_text for stop in generation_config.stop_strings):
+            if _has_stop_string(tokenizer, generated_ids, generation_config.stop_strings):
                 break
 
     decoded = tokenizer.decode(generated_ids, skip_special_tokens=True).strip()
@@ -274,3 +273,10 @@ def _sample_next_token(logits: Any, generation_config: GenerationConfig) -> Any:
         probs = torch.softmax(scaled, dim=-1)
         return torch.multinomial(probs, num_samples=1).squeeze(-1)
     return torch.argmax(logits, dim=-1)
+
+
+def _has_stop_string(tokenizer: Any, generated_ids: list[int], stop_strings: tuple[str, ...]) -> bool:
+    if not stop_strings:
+        return False
+    partial_text = tokenizer.decode(generated_ids, skip_special_tokens=True)
+    return any(stop in partial_text for stop in stop_strings)
