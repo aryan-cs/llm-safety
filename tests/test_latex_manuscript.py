@@ -3,7 +3,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path("scripts").resolve()))
 
-from package_arxiv_submission import _rewrite_main_tex_for_arxiv
+from package_arxiv_submission import GENERATED_DIRS, _rewrite_main_tex_for_arxiv
 
 
 def test_latex_manuscript_is_formal_registered_protocol() -> None:
@@ -59,6 +59,10 @@ def test_arxiv_rewrite_uses_local_bibliography_and_figures() -> None:
     assert "generated/h200_qwen_full_sweep" in _rewrite_main_tex_for_arxiv(
         "../generated/h200_qwen_full_sweep/main_results_table.tex"
     )
+    assert "generated/claim_assessment" in _rewrite_main_tex_for_arxiv(
+        "../generated/claim_assessment/claim_assessment_table.tex"
+    )
+    assert Path("paper/generated/claim_assessment") in GENERATED_DIRS
     assert "audit/h200_qwen_full_sweep_summary" in _rewrite_main_tex_for_arxiv(
         "../audit/h200_qwen_full_sweep_summary/human_audit_summary_table.tex"
     )

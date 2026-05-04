@@ -28,6 +28,7 @@ FIGURE_SOURCES = {
 GENERATED_DIRS = [
     Path("paper/generated/h200_qwen_full_sweep"),
     Path("paper/generated/h200_causal_patch_qwen7b"),
+    Path("paper/generated/claim_assessment"),
     Path("paper/generated/h200_qwen32b_public_followup"),
 ]
 AUDIT_DIRS = [

@@ -126,6 +126,10 @@ uv run python scripts/check_publication_readiness.py \
   --require-causal-patch \
   --require-policy-pinned \
   --require-public-provenance
+uv run python scripts/assess_claims.py \
+  --primary-results-dir "$latest_full" \
+  --causal-results-dir "$latest_causal" \
+  --output-dir paper/generated/claim_assessment
 uv run python scripts/export_human_audit_sample.py \
   --results-dir "$latest_causal" \
   --per-suite-policy "$audit_per_suite_policy"

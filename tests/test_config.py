@@ -62,6 +62,7 @@ def test_h200_sweep_run_ids_match_paper_figure_paths() -> None:
 
     assert 'full_run_id="${FULL_RUN_ID:-h200_qwen_full_sweep}"' in script
     assert 'causal_run_id="${CAUSAL_RUN_ID:-h200_causal_patch_qwen7b}"' in script
+    assert "scripts/assess_claims.py" in script
     assert "../../results/h200_qwen_full_sweep/figures/" in tex
     assert "../../results/h200_causal_patch_qwen7b/figures/" in tex
 
