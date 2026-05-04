@@ -29,6 +29,8 @@ paper/build/
 paper/generated/
 paper/audit/*.csv
 paper/audit/*.jsonl
+paper/audit/*_audit_export_manifest.json
+paper/audit/*_summary/
 *.aux
 *.bbl
 *.blg

@@ -210,6 +210,7 @@ def test_prepare_after_h200_fetch_regenerates_assets_before_audits() -> None:
     readme = Path("README.md").read_text(encoding="utf-8")
 
     assert "scripts/fetch_h200_results.sh" in script
+    assert "Refusing to prepare paper evidence from a dirty git working tree." in script
     assert 'scripts/aggregate_results.py --results-dir "$primary_results"' in script
     assert 'scripts/make_figures.py --results-dir "$primary_results"' in script
     assert '--paper-dir "$primary_generated_dir"' in script
@@ -219,6 +220,13 @@ def test_prepare_after_h200_fetch_regenerates_assets_before_audits() -> None:
     assert "scripts/assess_claims.py" not in script
     assert "build_paper_pdf.sh" not in script
     assert "bash scripts/prepare_after_h200_fetch.sh" in readme
+
+
+def test_generated_h200_audit_artifacts_are_ignored() -> None:
+    gitignore = Path(".gitignore").read_text(encoding="utf-8")
+
+    assert "paper/audit/*_audit_export_manifest.json" in gitignore
+    assert "paper/audit/*_summary/" in gitignore
 
 
 def test_publication_artifact_builder_fails_without_real_results() -> None:

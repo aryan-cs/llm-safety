@@ -13,6 +13,13 @@ arxiv_archive="${ARXIV_ARCHIVE:-paper/build/arxiv_source.tar.gz}"
 target_ci_width="${TARGET_CI_WIDTH:-0.08}"
 causal_ci_width="${CAUSAL_CI_WIDTH:-0.12}"
 
+if [[ -n "$(git status --short)" ]]; then
+  echo "Refusing to prepare paper evidence from a dirty git working tree." >&2
+  echo "Commit or stash code/documentation changes before regenerating paper assets." >&2
+  git status --short >&2
+  exit 1
+fi
+
 require_result_artifacts() {
   local results_dir="$1"
   for required in manifest.json generations.jsonl metrics.json cache_stats.parquet; do
