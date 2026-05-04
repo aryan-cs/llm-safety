@@ -88,3 +88,20 @@ uv run python scripts/check_human_audit_readiness.py \
 ```
 
 By default this requires complete annotations, no unknown audit IDs, no duplicate `(audit_id, annotator_id)` rows, at least two distinct annotators, full multi-annotator coverage, non-empty core safety labels, no unresolved consensus ties, hidden/system reference context for leakage labels, paired treatment-minus-baseline deltas, and at least one inter-annotator pair for each core label. Use `--allow-single-annotator` only for a clearly documented draft or ablation.
+
+## Open Local Judge Alternative
+
+If human annotators are not available, use a documented open local judge rather
+than filling the human-label columns by hand. The wrapper below runs two
+deterministic prompt variants and marks every row with
+`annotation_source_type=open_local_judge`, the judge model id, and the judge
+prompt hash:
+
+```bash
+bash scripts/run_publication_open_judge_audits.sh
+bash scripts/aggregate_publication_human_audits.sh
+```
+
+These labels are audit-support labels, not human labels. The paper and claim
+assessment must report the source as an open local judge, and any final claim
+must remain limited by that weaker validation source.
