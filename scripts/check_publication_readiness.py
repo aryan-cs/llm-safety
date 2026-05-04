@@ -188,6 +188,8 @@ def main() -> None:
                     failures.append(f"{policy}: missing policy-level SSEI CI")
         if args.require_causal_patch and not metrics.get("causal_restoration"):
             failures.append("missing causal restoration metrics")
+        if args.require_causal_patch and metrics.get("causal_restoration"):
+            _check_causal_restoration_metric_readiness(metrics, failures)
         for key, value in metrics.get("selective_safety_erasure", {}).items():
             ci = value.get("paired_safety_degradation_ci", {})
             if ci.get("ci_low") is None or ci.get("ci_high") is None:
@@ -347,6 +349,50 @@ def _check_causal_patch_config(policy_configs: list[dict], failures: list[str]) 
     ]
     if not matched_controls:
         failures.append("missing matched user-role cache patch control")
+
+
+def _check_causal_restoration_metric_readiness(
+    metrics: dict, failures: list[str]
+) -> None:
+    grouped: dict[tuple[str, str, str], set[str]] = {}
+    for key, values in metrics.get("causal_restoration", {}).items():
+        if "::" not in key:
+            failures.append(f"malformed causal restoration key `{key}`")
+            continue
+        suite, policy = key.split("::", 1)
+        compressed_policy = str(values.get("compressed_policy") or "")
+        role = _patch_role_class_from_label(policy)
+        if role is None or not compressed_policy:
+            continue
+        for metric in [
+            "safety_restoration_fraction",
+            "refusal_restoration_fraction",
+            "leakage_avoidance_restoration_fraction",
+        ]:
+            if values.get(metric) is None:
+                continue
+            ci = values.get(f"{metric}_ci") or {}
+            if ci.get("ci_low") is None or ci.get("ci_high") is None:
+                failures.append(f"{key}: missing `{metric}_ci` interval")
+                continue
+            grouped.setdefault((suite, compressed_policy, metric), set()).add(role)
+    if not any({"system", "user_control"}.issubset(roles) for roles in grouped.values()):
+        failures.append(
+            "causal restoration metrics lack same-endpoint system patch and matched user control intervals"
+        )
+
+
+def _patch_role_class_from_label(policy: str) -> str | None:
+    patch_part = policy.split("__patch", 1)[1] if "__patch" in policy else policy
+    normalized = "".join(char for char in patch_part.lower() if char.isalnum())
+    has_user = "roleuser" in normalized or "tokenroleuser" in normalized
+    has_system = "rolesystem" in normalized or "tokenrolesystem" in normalized
+    matched_system = "matchsystem" in normalized or "matchedsystem" in normalized
+    if has_user and matched_system:
+        return "user_control"
+    if has_system and not has_user:
+        return "system"
+    return None
 
 
 def _patch_roles(patch: dict) -> set[str]:

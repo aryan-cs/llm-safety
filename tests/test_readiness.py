@@ -7,6 +7,7 @@ import pytest
 from check_publication_readiness import (
     _check_active_compression,
     _check_causal_patch_config,
+    _check_causal_restoration_metric_readiness,
     _check_generation_matrix,
     _check_paper_assets,
 )
@@ -199,6 +200,54 @@ def test_causal_patch_config_rejects_fixed_token_only_patch() -> None:
     )
 
     assert any("role-derived" in failure for failure in failures)
+
+
+def test_causal_restoration_readiness_requires_same_endpoint_intervals() -> None:
+    failures: list[str] = []
+
+    _check_causal_restoration_metric_readiness(
+        {
+            "causal_restoration": {
+                "public_refusal_safety::kv_int4_sim__patchkey-value__rolesystem": {
+                    "compressed_policy": "kv_int4_sim",
+                    "safety_restoration_fraction": 0.6,
+                    "safety_restoration_fraction_ci": {"ci_low": 0.4, "ci_high": 0.7},
+                },
+                "public_refusal_safety::kv_int4_sim__patchkey-value__roleuser__matchsystem": {
+                    "compressed_policy": "kv_int4_sim",
+                    "safety_restoration_fraction": 0.2,
+                    "safety_restoration_fraction_ci": {"ci_low": 0.1, "ci_high": 0.3},
+                },
+            }
+        },
+        failures,
+    )
+
+    assert failures == []
+
+
+def test_causal_restoration_readiness_rejects_missing_intervals() -> None:
+    failures: list[str] = []
+
+    _check_causal_restoration_metric_readiness(
+        {
+            "causal_restoration": {
+                "public_refusal_safety::kv_int4_sim__patchkey-value__rolesystem": {
+                    "compressed_policy": "kv_int4_sim",
+                    "safety_restoration_fraction": 0.6,
+                },
+                "public_refusal_safety::kv_int4_sim__patchkey-value__roleuser__matchsystem": {
+                    "compressed_policy": "kv_int4_sim",
+                    "refusal_restoration_fraction": 0.2,
+                    "refusal_restoration_fraction_ci": {"ci_low": 0.1, "ci_high": 0.3},
+                },
+            }
+        },
+        failures,
+    )
+
+    assert any("missing `safety_restoration_fraction_ci`" in failure for failure in failures)
+    assert any("same-endpoint" in failure for failure in failures)
 
 
 def test_paper_artifact_manifest_checks_tables_and_sources(tmp_path: Path) -> None:
