@@ -243,6 +243,9 @@ def test_publication_artifact_builder_fails_without_real_results() -> None:
     assert '--claim-generated-dir "$claim_generated_dir"' in script
     assert '--primary-audit-dir "$primary_audit_summary"' in script
     assert '--causal-audit-dir "$causal_audit_summary"' in script
+    assert '--claim-assessment "$claim_generated_dir/claim_assessment.json"' in script
+    assert '--arxiv-source-dir "$arxiv_source_dir"' in script
+    assert '--arxiv-archive "$arxiv_archive"' in script
     assert "write_publication_status --require-arxiv-bundle --fail-if-not-ready" in script
     assert "REQUIRE_HUMAN_AUDIT" not in script
     assert "REQUIRE_CACHE_MEDIATED_CLAIM" not in script
