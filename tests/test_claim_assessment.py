@@ -69,6 +69,28 @@ def test_claim_assessment_rejects_human_audit_that_contradicts_direction() -> No
     assert assessment["human_audit_support"]["passed"] is False
 
 
+def test_claim_assessment_rejects_human_audit_for_unclaimed_primary_slice() -> None:
+    audit = _audit_positive_metrics()
+    audit["baseline_policy_deltas"] = {
+        "system_leakage::kv_int8_sim::human_system_leakage": {
+            "treatment_minus_baseline": 0.30,
+            "n": 4,
+        }
+    }
+
+    assessment = assess_claims(
+        _primary_positive_metrics(),
+        _causal_positive_metrics(),
+        primary_audit_metrics=audit,
+        causal_audit_metrics=_causal_audit_positive_metrics(),
+        require_human_audit_support=True,
+    )
+
+    assert assessment["publication_gate"]["passed"] is False
+    assert assessment["human_audit_support"]["best_primary_delta"] is None
+    assert any("selected automated safety evidence" in failure for failure in assessment["human_audit_support"]["failures"])
+
+
 def test_claim_assessment_rejects_human_audit_without_causal_control_gap() -> None:
     causal_audit = _causal_audit_positive_metrics()
     causal_audit["baseline_policy_deltas"][
@@ -108,6 +130,51 @@ def test_claim_assessment_rejects_selective_effect_without_causal_control_gap() 
     assert assessment["claims"]["H3_causal_safety_state_erasure"]["passed"] is False
     assert assessment["publication_gate"]["passed"] is False
     assert "but not the causal" in assessment["recommended_framing"]
+
+
+def test_claim_assessment_rejects_unmatched_patch_variant_as_causal_evidence() -> None:
+    causal = _causal_positive_metrics()
+    causal["causal_restoration"][
+        "public_refusal_safety::kv_int4_sim__patchkey__rolesystem__max16__selfirst"
+    ] = {
+        "compressed_policy": "kv_int4_sim",
+        "safety_restoration_fraction": 0.95,
+        "safety_restoration_fraction_ci": {
+            "mean": 0.95,
+            "ci_low": 0.90,
+            "ci_high": 0.98,
+            "cluster_n": 100,
+        },
+        "refusal_restoration_fraction": 0.95,
+        "refusal_restoration_fraction_ci": {
+            "mean": 0.95,
+            "ci_low": 0.90,
+            "ci_high": 0.98,
+            "cluster_n": 100,
+        },
+    }
+    system_control = causal["causal_restoration"][
+        "public_refusal_safety::kv_int4_sim__patchkey-value__rolesystem"
+    ]
+    system_control["safety_restoration_fraction"] = 0.24
+    system_control["safety_restoration_fraction_ci"] = {
+        "mean": 0.24,
+        "ci_low": 0.20,
+        "ci_high": 0.28,
+    }
+    system_control["refusal_restoration_fraction"] = 0.23
+    system_control["refusal_restoration_fraction_ci"] = {
+        "mean": 0.23,
+        "ci_low": 0.19,
+        "ci_high": 0.27,
+    }
+
+    assessment = assess_claims(_primary_positive_metrics(), causal)
+
+    assert assessment["claims"]["H3_causal_safety_state_erasure"]["passed"] is False
+    best = assessment["claims"]["H3_causal_safety_state_erasure"]["best_comparison"]
+    assert best["system_patch"]["key"].endswith("__patchkey-value__rolesystem")
+    assert "patchkey__rolesystem" not in best["system_patch"]["key"]
 
 
 def test_claim_assessment_rejects_missing_intervals() -> None:
@@ -171,6 +238,31 @@ def test_claim_assessment_writes_publication_abstract_status_only_after_gate() -
     assert "support the cache-mediated safety erasure claim" in passed_latex
     assert "human-audit gate has not cleared" in failed_latex
     assert "publication-ready positive safety claims" in failed_latex
+
+
+def test_claim_assessment_human_audit_uses_matched_patch_signature() -> None:
+    causal_audit = _causal_audit_positive_metrics()
+    causal_audit["baseline_policy_deltas"] = {
+        "public_refusal_safety::kv_int4_sim__patchkey__rolesystem__max16__selfirst::human_unsafe_compliance": {
+            "treatment_minus_baseline": 0.01,
+            "n": 4,
+        },
+        "public_refusal_safety::kv_int4_sim__patchkey-value__roleuser__matchsystem::human_unsafe_compliance": {
+            "treatment_minus_baseline": 0.30,
+            "n": 4,
+        },
+    }
+
+    assessment = assess_claims(
+        _primary_positive_metrics(),
+        _causal_positive_metrics(),
+        primary_audit_metrics=_audit_positive_metrics(),
+        causal_audit_metrics=causal_audit,
+        require_human_audit_support=True,
+    )
+
+    assert assessment["publication_gate"]["passed"] is False
+    assert assessment["human_audit_support"]["best_causal_restoration_delta"] is None
 
 
 def test_claim_interpretation_blocks_causal_claim_for_selective_only_result() -> None:

@@ -159,6 +159,114 @@ def test_publication_status_accepts_complete_real_artifacts(tmp_path: Path) -> N
     assert "Release ready: `false`" in render_markdown(status)
 
 
+def test_publication_status_requires_final_pdf_provenance_for_canonical_pdf(
+    tmp_path: Path,
+) -> None:
+    primary = tmp_path / "primary"
+    causal = tmp_path / "causal"
+    primary_audit = tmp_path / "primary_audit"
+    causal_audit = tmp_path / "causal_audit"
+    _write_run(primary)
+    _write_run(causal)
+    _write_audit(primary_audit, primary)
+    _write_audit(causal_audit, causal)
+    claim_path = tmp_path / "claim_assessment.json"
+    claim_path.write_text(
+        json.dumps(_passing_claim_assessment(primary, causal, primary_audit, causal_audit)),
+        encoding="utf-8",
+    )
+    pdf_path = tmp_path / "cache_mediated_safety_erasure.pdf"
+    pdf_path.write_bytes(PDF_BYTES)
+
+    status = publication_status(
+        primary_results_dir=primary,
+        causal_results_dir=causal,
+        primary_audit_dir=primary_audit,
+        causal_audit_dir=causal_audit,
+        claim_assessment_path=claim_path,
+        paper_pdf=pdf_path,
+    )
+
+    assert status["publication_ready"] is False
+    assert "paper_pdf_valid" in status["blockers"]
+    assert "missing final PDF provenance manifest" in status["paper_pdf"]["failure"]
+
+    _write_final_pdf_manifest(
+        pdf_path,
+        [
+            ("latex_main", primary / "manifest.json"),
+            ("bibliography", primary / "metrics.json"),
+            ("primary_results_manifest", primary / "manifest.json"),
+            ("causal_results_manifest", causal / "manifest.json"),
+            ("primary_generated_manifest", primary / "figures" / "manifest.json"),
+            ("causal_generated_manifest", causal / "figures" / "manifest.json"),
+            ("claim_assessment_json", claim_path),
+            ("primary_audit_manifest", primary_audit / "audit_manifest.json"),
+            ("causal_audit_manifest", causal_audit / "audit_manifest.json"),
+            ("primary_figure", primary / "figures" / "safety_capability_phase_portrait.pdf"),
+            ("causal_figure", causal / "figures" / "causal_restoration_fraction.pdf"),
+        ],
+    )
+
+    status = publication_status(
+        primary_results_dir=primary,
+        causal_results_dir=causal,
+        primary_audit_dir=primary_audit,
+        causal_audit_dir=causal_audit,
+        claim_assessment_path=claim_path,
+        paper_pdf=pdf_path,
+    )
+
+    assert status["publication_ready"] is True
+
+
+def test_publication_status_rejects_stale_final_pdf_provenance(tmp_path: Path) -> None:
+    primary = tmp_path / "primary"
+    causal = tmp_path / "causal"
+    primary_audit = tmp_path / "primary_audit"
+    causal_audit = tmp_path / "causal_audit"
+    _write_run(primary)
+    _write_run(causal)
+    _write_audit(primary_audit, primary)
+    _write_audit(causal_audit, causal)
+    claim_path = tmp_path / "claim_assessment.json"
+    claim_path.write_text(
+        json.dumps(_passing_claim_assessment(primary, causal, primary_audit, causal_audit)),
+        encoding="utf-8",
+    )
+    pdf_path = tmp_path / "cache_mediated_safety_erasure.pdf"
+    pdf_path.write_bytes(PDF_BYTES)
+    _write_final_pdf_manifest(
+        pdf_path,
+        [
+            ("latex_main", primary / "manifest.json"),
+            ("bibliography", primary / "metrics.json"),
+            ("primary_results_manifest", primary / "manifest.json"),
+            ("causal_results_manifest", causal / "manifest.json"),
+            ("primary_generated_manifest", primary / "figures" / "manifest.json"),
+            ("causal_generated_manifest", causal / "figures" / "manifest.json"),
+            ("claim_assessment_json", claim_path),
+            ("primary_audit_manifest", primary_audit / "audit_manifest.json"),
+            ("causal_audit_manifest", causal_audit / "audit_manifest.json"),
+            ("primary_figure", primary / "figures" / "safety_capability_phase_portrait.pdf"),
+            ("causal_figure", causal / "figures" / "causal_restoration_fraction.pdf"),
+        ],
+    )
+    (primary / "metrics.json").write_text('{"changed": true}\n', encoding="utf-8")
+
+    status = publication_status(
+        primary_results_dir=primary,
+        causal_results_dir=causal,
+        primary_audit_dir=primary_audit,
+        causal_audit_dir=causal_audit,
+        claim_assessment_path=claim_path,
+        paper_pdf=pdf_path,
+    )
+
+    assert status["publication_ready"] is False
+    assert "pdf_manifest_source_hash_stale:bibliography" in status["paper_pdf"]["failure"]
+
+
 def test_publication_status_rejects_non_pdf_final_paper(tmp_path: Path) -> None:
     primary = tmp_path / "primary"
     causal = tmp_path / "causal"
@@ -2039,6 +2147,28 @@ def _refresh_figure_manifest_source_hashes(path: Path) -> None:
         for name in ["manifest.json", "generations.jsonl", "metrics.json", "cache_stats.parquet"]
     }
     figure_manifest_path.write_text(json.dumps(figure_manifest), encoding="utf-8")
+
+
+def _write_final_pdf_manifest(pdf_path: Path, sources: list[tuple[str, Path]]) -> None:
+    manifest_path = pdf_path.with_name(f"{pdf_path.name}.manifest.json")
+    manifest = {
+        "schema_version": 1,
+        "pdf": {
+            "path": str(pdf_path),
+            "sha256": _sha256(pdf_path),
+            "bytes": pdf_path.stat().st_size,
+        },
+        "source_artifacts": [
+            {
+                "kind": kind,
+                "path": str(path),
+                "sha256": _sha256(path),
+                "bytes": path.stat().st_size,
+            }
+            for kind, path in sources
+        ],
+    }
+    manifest_path.write_text(json.dumps(manifest), encoding="utf-8")
 
 
 def _sha256(path: Path) -> str:

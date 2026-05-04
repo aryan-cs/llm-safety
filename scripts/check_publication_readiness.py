@@ -571,12 +571,23 @@ def _check_causal_patch_config(policy_configs: list[dict], failures: list[str]) 
     ]
     if not matched_controls:
         failures.append("missing matched user-role cache patch control")
+    system_signatures = {_patch_control_signature(patch) for patch in system_patches}
+    matched_control_signatures = {
+        _patch_control_signature(patch) for patch in matched_controls
+    }
+    if system_signatures and matched_control_signatures and not (
+        system_signatures & matched_control_signatures
+    ):
+        failures.append(
+            "system-role cache patches lack a user-control patch with matching "
+            "components, token budget, selection, layers, heads, and token indices"
+        )
 
 
 def _check_causal_restoration_metric_readiness(
     metrics: dict, failures: list[str]
 ) -> None:
-    grouped: dict[tuple[str, str, str], set[str]] = {}
+    grouped: dict[tuple[str, str, str, str], set[str]] = {}
     for key, values in metrics.get("causal_restoration", {}).items():
         if "::" not in key:
             failures.append(f"malformed causal restoration key `{key}`")
@@ -584,6 +595,7 @@ def _check_causal_restoration_metric_readiness(
         suite, policy = key.split("::", 1)
         compressed_policy = str(values.get("compressed_policy") or "")
         role = _patch_role_class_from_label(policy)
+        signature = _patch_match_signature_from_label(policy)
         if role is None or not compressed_policy:
             continue
         for metric in [
@@ -597,7 +609,7 @@ def _check_causal_restoration_metric_readiness(
             if ci.get("ci_low") is None or ci.get("ci_high") is None:
                 failures.append(f"{key}: missing `{metric}_ci` interval")
                 continue
-            grouped.setdefault((suite, compressed_policy, metric), set()).add(role)
+            grouped.setdefault((suite, compressed_policy, metric, signature), set()).add(role)
     if not any({"system", "user_control"}.issubset(roles) for roles in grouped.values()):
         failures.append(
             "causal restoration metrics lack same-endpoint system patch and matched user control intervals"
@@ -617,6 +629,19 @@ def _patch_role_class_from_label(policy: str) -> str | None:
     return None
 
 
+def _patch_match_signature_from_label(policy: str) -> str:
+    if "__patch" not in policy:
+        return ""
+    signature_parts = []
+    for part in policy.split("__")[1:]:
+        normalized = "".join(char for char in part.lower() if char.isalnum() or char == "-")
+        if normalized.startswith(("role", "match")):
+            continue
+        if normalized.startswith(("patch", "max", "sel", "tok", "layer", "head")):
+            signature_parts.append(normalized)
+    return "__".join(signature_parts)
+
+
 def _patch_roles(patch: dict) -> set[str]:
     return set(_as_string_list(patch.get("token_roles") or patch.get("roles") or patch.get("role")))
 
@@ -628,6 +653,17 @@ def _patch_match_roles(patch: dict) -> set[str]:
             or patch.get("matched_token_roles")
             or patch.get("match_roles")
         )
+    )
+
+
+def _patch_control_signature(patch: dict) -> tuple[object, ...]:
+    return (
+        tuple(_as_string_list(patch.get("components") or ["key", "value"])),
+        "" if patch.get("max_tokens") is None else str(patch.get("max_tokens")),
+        str(patch.get("selection") or ""),
+        tuple(_as_string_list(patch.get("token_indices"))),
+        tuple(_as_string_list(patch.get("layers"))),
+        tuple(_as_string_list(patch.get("heads"))),
     )
 
 

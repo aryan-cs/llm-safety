@@ -16,6 +16,41 @@ arxiv_source_dir="${ARXIV_SOURCE_DIR:-paper/build/arxiv_source}"
 arxiv_archive="${ARXIV_ARCHIVE:-paper/build/arxiv_source.tar.gz}"
 mkdir -p "$build_dir"
 
+final_pdf_sources=(
+  "latex_main=$src_dir/main.tex"
+  "bibliography=paper/references.bib"
+  "primary_results_manifest=$primary_results/manifest.json"
+  "primary_results_metrics=$primary_results/metrics.json"
+  "primary_figures_manifest=$primary_results/figures/manifest.json"
+  "causal_results_manifest=$causal_results/manifest.json"
+  "causal_results_metrics=$causal_results/metrics.json"
+  "causal_figures_manifest=$causal_results/figures/manifest.json"
+  "primary_generated_manifest=$primary_paper_dir/artifact_manifest.json"
+  "primary_generated_main_table=$primary_paper_dir/main_results_table.tex"
+  "primary_generated_suite_table=$primary_paper_dir/suite_level_effects_table.tex"
+  "primary_generated_macros=$primary_paper_dir/result_macros.tex"
+  "causal_generated_manifest=$causal_paper_dir/artifact_manifest.json"
+  "causal_generated_table=$causal_paper_dir/causal_restoration_table.tex"
+  "causal_generated_macros=$causal_paper_dir/result_macros.tex"
+  "claim_assessment_json=$claim_assessment"
+  "claim_generated_status=$(dirname "$claim_assessment")/abstract_status_sentence.tex"
+  "claim_generated_table=$(dirname "$claim_assessment")/claim_assessment_table.tex"
+  "claim_generated_interpretation=$(dirname "$claim_assessment")/claim_interpretation.tex"
+  "primary_audit_manifest=$primary_audit_dir/audit_manifest.json"
+  "primary_audit_summary_table=$primary_audit_dir/human_audit_summary_table.tex"
+  "primary_audit_deltas_table=$primary_audit_dir/human_audit_deltas_table.tex"
+  "causal_audit_manifest=$causal_audit_dir/audit_manifest.json"
+  "causal_audit_summary_table=$causal_audit_dir/human_audit_summary_table.tex"
+  "causal_audit_deltas_table=$causal_audit_dir/human_audit_deltas_table.tex"
+  "primary_figure=$primary_results/figures/safety_capability_phase_portrait.pdf"
+  "primary_figure=$primary_results/figures/selective_safety_erasure_heatmap.pdf"
+  "primary_figure=$primary_results/figures/prompt_effect_constellation.pdf"
+  "primary_figure=$primary_results/figures/cache_state_fingerprint.pdf"
+  "primary_figure=$primary_results/figures/safety_state_atlas.pdf"
+  "causal_figure=$causal_results/figures/causal_restoration_fraction.pdf"
+  "causal_figure=$causal_results/figures/causal_restoration_flow.pdf"
+)
+
 publication_status_args=(
   --primary-results-dir "$primary_results"
   --causal-results-dir "$causal_results"
@@ -43,6 +78,17 @@ check_final_pdf_text() {
   if [[ "${REQUIRE_COMPLETE_PAPER:-0}" == "1" ]]; then
     uv run python scripts/check_final_pdf_text.py --pdf "$pdf"
   fi
+}
+
+write_final_pdf_manifest() {
+  local pdf="$1"
+  local output="$2"
+  local cmd=(uv run python scripts/write_final_pdf_manifest.py --pdf "$pdf" --output "$output")
+  local source
+  for source in "${final_pdf_sources[@]}"; do
+    cmd+=(--source "$source")
+  done
+  "${cmd[@]}"
 }
 
 if [[ "${REQUIRE_COMPLETE_PAPER:-0}" == "1" ]]; then
@@ -86,6 +132,9 @@ require_valid_pdf "$build_dir/main.pdf"
 mv "$build_dir/main.pdf" "$build_dir/cache_mediated_safety_erasure.pdf"
 require_valid_pdf "$build_dir/cache_mediated_safety_erasure.pdf"
 check_final_pdf_text "$build_dir/cache_mediated_safety_erasure.pdf"
+write_final_pdf_manifest \
+  "$build_dir/cache_mediated_safety_erasure.pdf" \
+  "$build_dir/cache_mediated_safety_erasure.pdf.manifest.json"
 
 if [[ "${REQUIRE_COMPLETE_PAPER:-0}" == "1" ]]; then
   uv run python scripts/report_publication_status.py \
@@ -97,6 +146,9 @@ fi
 cp "$build_dir/cache_mediated_safety_erasure.pdf" paper/cache_mediated_safety_erasure.pdf
 require_valid_pdf paper/cache_mediated_safety_erasure.pdf
 check_final_pdf_text paper/cache_mediated_safety_erasure.pdf
+write_final_pdf_manifest \
+  "paper/cache_mediated_safety_erasure.pdf" \
+  "paper/cache_mediated_safety_erasure.pdf.manifest.json"
 
 echo "Wrote $build_dir/cache_mediated_safety_erasure.pdf"
 echo "Wrote paper/cache_mediated_safety_erasure.pdf"

@@ -301,7 +301,7 @@ def write_latex_macros(path: Path, metrics: dict, results_dir: Path, prefix: str
         )
     ci = top_values.get("selective_safety_erasure_index_ci", {}) if top_values else {}
     macros = {
-        "RunId": results_dir.name,
+        "RunId": _publication_run_label(prefix, results_dir.name),
         "PolicyCount": len(policies),
         "TopSSEIPolicy": top_policy,
         "TopSSEI": format_value(top_values.get("selective_safety_erasure_index"))
@@ -326,6 +326,17 @@ def _latex_macro_name(prefix: str, suffix: str) -> str:
     if not safe_prefix:
         safe_prefix = "Primary"
     return f"{safe_prefix}{suffix}"
+
+
+def _publication_run_label(prefix: str, fallback: str) -> str:
+    normalized = "".join(char for char in prefix.lower() if char.isalpha())
+    if normalized.startswith("primary"):
+        return "primary public sweep"
+    if normalized.startswith("causal"):
+        return "causal restoration diagnostic"
+    if "thirtytwo" in normalized:
+        return "model-scale follow-up"
+    return fallback
 
 
 def _latex_header(column: str) -> str:

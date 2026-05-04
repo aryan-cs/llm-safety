@@ -115,6 +115,8 @@ def assess_claims(
     audit_support = _assess_human_audit_support(
         primary_audit_metrics,
         causal_audit_metrics,
+        primary_target=_primary_audit_target(h1, h2),
+        causal_target=_causal_audit_target(h3),
         min_human_audit_delta=min_human_audit_delta,
         required=require_human_audit_support,
     )
@@ -515,16 +517,18 @@ def _assess_causal_restoration(
     min_restoration_fraction: float,
     min_restoration_margin: float,
 ) -> dict[str, Any]:
-    grouped: dict[tuple[str, str, str], dict[str, list[dict[str, Any]]]] = {}
+    grouped: dict[tuple[str, str, str, str], dict[str, list[dict[str, Any]]]] = {}
     for key, values in metrics.get("causal_restoration", {}).items():
         suite, policy = key.split("::", 1)
         compressed_policy = str(values.get("compressed_policy") or "")
         role = _patch_role_class(policy)
+        signature = _patch_match_signature_from_label(policy)
         if role is None or not compressed_policy:
             continue
         for metric_name, metric_value, metric_ci in _eligible_restoration_metrics(values):
             bucket = grouped.setdefault(
-                (suite, compressed_policy, metric_name), {"system": [], "user_control": []}
+                (suite, compressed_policy, metric_name, signature),
+                {"system": [], "user_control": []},
             )
             bucket[role].append(
                 {
@@ -534,11 +538,14 @@ def _assess_causal_restoration(
                     "ci_low": metric_ci["ci_low"],
                     "ci_high": metric_ci["ci_high"],
                     "policy": policy,
+                    "patch_match_signature": signature,
                 }
             )
 
     comparisons = []
-    for (suite, compressed_policy, metric_name), role_values in sorted(grouped.items()):
+    for (suite, compressed_policy, metric_name, signature), role_values in sorted(
+        grouped.items()
+    ):
         _ = metric_name
         system = _best_restoration_value(role_values["system"])
         user_control = _best_restoration_value(role_values["user_control"])
@@ -554,6 +561,7 @@ def _assess_causal_restoration(
             {
                 "suite": suite,
                 "compressed_policy": compressed_policy,
+                "patch_match_signature": signature,
                 "system_patch": system,
                 "matched_user_control": user_control,
                 "margin": margin,
@@ -579,6 +587,8 @@ def _assess_human_audit_support(
     primary_audit_metrics: dict[str, Any] | None,
     causal_audit_metrics: dict[str, Any] | None,
     *,
+    primary_target: dict[str, str] | None,
+    causal_target: dict[str, str] | None,
     min_human_audit_delta: float,
     required: bool,
 ) -> dict[str, Any]:
@@ -597,19 +607,26 @@ def _assess_human_audit_support(
     ]:
         failures.extend(_audit_readiness_failures(label, metrics))
     best_primary_delta = (
-        _best_human_safety_delta(primary_audit_metrics.get("baseline_policy_deltas") or {})
+        _best_human_safety_delta(
+            primary_audit_metrics.get("baseline_policy_deltas") or {},
+            target=primary_target,
+        )
         if primary_audit_metrics
         else None
     )
     best_causal_delta = (
         _best_human_causal_restoration_delta(
-            causal_audit_metrics.get("baseline_policy_deltas") or {}
+            causal_audit_metrics.get("baseline_policy_deltas") or {},
+            target=causal_target,
         )
         if causal_audit_metrics
         else None
     )
     if best_primary_delta is None:
-        failures.append("primary audit has no safety-direction baseline-policy delta")
+        failures.append(
+            "primary audit has no safety-direction baseline-policy delta "
+            "for the selected automated safety evidence"
+        )
     elif best_primary_delta["support"] <= min_human_audit_delta:
         failures.append(
             "primary audit best safety-direction delta "
@@ -617,7 +634,10 @@ def _assess_human_audit_support(
             f"{_fmt(min_human_audit_delta)}"
         )
     if best_causal_delta is None:
-        failures.append("causal audit has no matched human-labeled system-patch control gap")
+        failures.append(
+            "causal audit has no matched human-labeled system-patch control gap "
+            "for the selected automated causal evidence"
+        )
     elif best_causal_delta["support"] <= min_human_audit_delta:
         failures.append(
             "causal audit best system-vs-control restoration support "
@@ -655,13 +675,20 @@ def _audit_readiness_failures(label: str, metrics: dict[str, Any] | None) -> lis
     return failures
 
 
-def _best_human_safety_delta(deltas: dict[str, Any]) -> dict[str, Any] | None:
+def _best_human_safety_delta(
+    deltas: dict[str, Any], *, target: dict[str, str] | None = None
+) -> dict[str, Any] | None:
     best = None
     for key, values in deltas.items():
+        parsed = _parse_audit_delta_key(str(key))
+        if parsed is None:
+            continue
+        suite, policy, label = parsed
+        if target and not _audit_policy_target_matches(suite, policy, target):
+            continue
         raw_delta = _as_float(values.get("treatment_minus_baseline")) if isinstance(values, dict) else None
         if raw_delta is None:
             continue
-        label = str(key).rsplit("::", 1)[-1]
         direction = _human_safety_direction(label)
         if direction is None:
             continue
@@ -678,8 +705,10 @@ def _best_human_safety_delta(deltas: dict[str, Any]) -> dict[str, Any] | None:
     return best
 
 
-def _best_human_causal_restoration_delta(deltas: dict[str, Any]) -> dict[str, Any] | None:
-    grouped: dict[tuple[str, str, str], dict[str, list[dict[str, Any]]]] = {}
+def _best_human_causal_restoration_delta(
+    deltas: dict[str, Any], *, target: dict[str, str] | None = None
+) -> dict[str, Any] | None:
+    grouped: dict[tuple[str, str, str, str], dict[str, list[dict[str, Any]]]] = {}
     for key, values in deltas.items():
         if not isinstance(values, dict):
             continue
@@ -688,9 +717,14 @@ def _best_human_causal_restoration_delta(deltas: dict[str, Any]) -> dict[str, An
             continue
         suite, policy, label = parsed
         role = _patch_role_class(policy)
+        signature = _patch_match_signature_from_label(policy)
         if role is None:
             continue
         compressed_policy = policy.split("__patch", 1)[0]
+        if target and not _causal_audit_target_matches(
+            suite, compressed_policy, signature, target
+        ):
+            continue
         raw_delta = _as_float(values.get("treatment_minus_baseline"))
         direction = _human_safety_direction(label)
         if raw_delta is None or direction is None:
@@ -704,15 +738,16 @@ def _best_human_causal_restoration_delta(deltas: dict[str, Any]) -> dict[str, An
             "label": label,
             "treatment_minus_baseline": raw_delta,
             "degradation_support": degradation_support,
+            "patch_match_signature": signature,
             "n": int(values.get("n") or 0),
         }
         bucket = grouped.setdefault(
-            (suite, compressed_policy, label), {"system": [], "user_control": []}
+            (suite, compressed_policy, label, signature), {"system": [], "user_control": []}
         )
         bucket[role].append(item)
 
     best = None
-    for (suite, compressed_policy, label), role_values in grouped.items():
+    for (suite, compressed_policy, label, signature), role_values in grouped.items():
         system = _lowest_degradation_support(role_values["system"])
         user_control = _highest_degradation_support(role_values["user_control"])
         if system is None or user_control is None:
@@ -722,6 +757,7 @@ def _best_human_causal_restoration_delta(deltas: dict[str, Any]) -> dict[str, An
             "suite": suite,
             "compressed_policy": compressed_policy,
             "label": label,
+            "patch_match_signature": signature,
             "system_patch": system,
             "matched_user_control": user_control,
             "support": support,
@@ -737,6 +773,58 @@ def _parse_audit_delta_key(key: str) -> tuple[str, str, str] | None:
     if len(parts) != 3:
         return None
     return parts[0], parts[1], parts[2]
+
+
+def _primary_audit_target(h1: dict[str, Any], h2: dict[str, Any]) -> dict[str, str] | None:
+    h1_key = (h1.get("best_evidence") or {}).get("key") if isinstance(h1, dict) else None
+    if isinstance(h1_key, str) and "::" in h1_key:
+        suite, policy = h1_key.split("::", 1)
+        return {"suite": suite, "policy": policy}
+    h2_key = (h2.get("best_evidence") or {}).get("key") if isinstance(h2, dict) else None
+    if isinstance(h2_key, str) and h2_key:
+        return {"policy": h2_key}
+    return None
+
+
+def _causal_audit_target(h3: dict[str, Any]) -> dict[str, str] | None:
+    comparison = h3.get("best_comparison") if isinstance(h3, dict) else None
+    if not isinstance(comparison, dict):
+        return None
+    suite = comparison.get("suite")
+    compressed_policy = comparison.get("compressed_policy")
+    signature = comparison.get("patch_match_signature")
+    if not isinstance(suite, str) or not isinstance(compressed_policy, str):
+        return None
+    return {
+        "suite": suite,
+        "compressed_policy": compressed_policy,
+        "patch_match_signature": str(signature or ""),
+    }
+
+
+def _audit_policy_target_matches(
+    suite: str, policy: str, target: dict[str, str]
+) -> bool:
+    target_suite = target.get("suite")
+    target_policy = target.get("policy")
+    if target_suite is not None and suite != target_suite:
+        return False
+    if target_policy is not None and policy != target_policy:
+        return False
+    return True
+
+
+def _causal_audit_target_matches(
+    suite: str,
+    compressed_policy: str,
+    signature: str,
+    target: dict[str, str],
+) -> bool:
+    return (
+        suite == target.get("suite")
+        and compressed_policy == target.get("compressed_policy")
+        and signature == target.get("patch_match_signature", "")
+    )
 
 
 def _human_safety_direction(label: str) -> float | None:
@@ -796,6 +884,24 @@ def _patch_role_class(policy: str) -> str | None:
     if has_system and not has_user:
         return "system"
     return None
+
+
+def _patch_match_signature_from_label(policy: str) -> str:
+    """Return patch-control details that must match across causal controls.
+
+    Role and matched-role labels intentionally do not participate in the signature;
+    component, token-count, selection, layer, head, and token-index choices do.
+    """
+    if "__patch" not in policy:
+        return ""
+    signature_parts = []
+    for part in policy.split("__")[1:]:
+        normalized = re.sub(r"[^a-z0-9-]+", "", part.lower())
+        if normalized.startswith(("role", "match")):
+            continue
+        if normalized.startswith(("patch", "max", "sel", "tok", "layer", "head")):
+            signature_parts.append(normalized)
+    return "__".join(signature_parts)
 
 
 def _eligible_restoration_metrics(values: dict[str, Any]) -> list[tuple[str, float, dict[str, float]]]:

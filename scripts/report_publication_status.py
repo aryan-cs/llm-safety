@@ -135,6 +135,20 @@ RAW_EVIDENCE_BASENAMES = {
     "prompts.jsonl",
 }
 RAW_EVIDENCE_SUFFIXES = {".csv", ".jsonl", ".parquet"}
+FINAL_PDF_NAME = "cache_mediated_safety_erasure.pdf"
+FINAL_PDF_REQUIRED_SOURCE_PREFIXES = [
+    "latex_main",
+    "bibliography",
+    "primary_results",
+    "causal_results",
+    "primary_generated",
+    "causal_generated",
+    "claim_",
+    "primary_audit",
+    "causal_audit",
+    "primary_figure",
+    "causal_figure",
+]
 
 
 def main() -> None:
@@ -494,12 +508,46 @@ def _causal_patch_contract_failures(policy_configs: list[Any]) -> list[str]:
         and "system" in (patch.get("match_token_count_to_roles") or [])
         for patch in patched
     )
+    system_signatures = {
+        _patch_control_signature(patch)
+        for patch in patched
+        if "system" in (patch.get("token_roles") or [])
+    }
+    user_control_signatures = {
+        _patch_control_signature(patch)
+        for patch in patched
+        if "user" in (patch.get("token_roles") or [])
+        and "system" in (patch.get("match_token_count_to_roles") or [])
+    }
     failures = []
     if not has_system:
         failures.append("missing_system_patch_policy")
     if not has_user_control:
         failures.append("missing_matched_user_control_patch_policy")
+    if system_signatures and user_control_signatures and not (
+        system_signatures & user_control_signatures
+    ):
+        failures.append("missing_same_signature_matched_user_control_patch_policy")
     return failures
+
+
+def _patch_control_signature(patch: dict[str, Any]) -> tuple[object, ...]:
+    return (
+        tuple(_as_string_list(patch.get("components") or ["key", "value"])),
+        "" if patch.get("max_tokens") is None else str(patch.get("max_tokens")),
+        str(patch.get("selection") or ""),
+        tuple(_as_string_list(patch.get("token_indices"))),
+        tuple(_as_string_list(patch.get("layers"))),
+        tuple(_as_string_list(patch.get("heads"))),
+    )
+
+
+def _as_string_list(value: object) -> list[str]:
+    if value is None:
+        return []
+    if isinstance(value, (list, tuple, set)):
+        return [str(item) for item in value]
+    return [str(value)]
 
 
 def _ci_width_failures(metrics: dict[str, Any], *, profile: str) -> list[str]:
@@ -829,6 +877,9 @@ def _pdf_status(path: Path) -> dict[str, Any]:
     text_failure = "" if failure else _pdf_text_failure(path)
     if text_failure:
         failure = text_failure
+    provenance_failure = "" if failure else _pdf_provenance_failure(path)
+    if provenance_failure:
+        failure = provenance_failure
     return {
         "path": str(path),
         "exists": path.exists(),
@@ -836,6 +887,7 @@ def _pdf_status(path: Path) -> dict[str, Any]:
         "failure": failure,
         "bytes": path.stat().st_size if path.exists() else None,
         "sha256": file_sha256(path),
+        "provenance_manifest": str(_pdf_manifest_path(path)),
     }
 
 
@@ -864,6 +916,50 @@ def _pdf_text_failure(path: Path) -> str:
     if failures:
         return f"{extractor}: " + "; ".join(failures)
     return ""
+
+
+def _pdf_provenance_failure(path: Path) -> str:
+    if path.name != FINAL_PDF_NAME:
+        return ""
+    manifest_path = _pdf_manifest_path(path)
+    manifest = _read_json(manifest_path)
+    if not manifest:
+        return f"missing final PDF provenance manifest: {manifest_path}"
+    failures = []
+    if manifest.get("schema_version") != 1:
+        failures.append("invalid_pdf_manifest_schema")
+    pdf_entry = manifest.get("pdf")
+    if not isinstance(pdf_entry, dict):
+        failures.append("missing_pdf_manifest_pdf_entry")
+    elif pdf_entry.get("sha256") != file_sha256(path):
+        failures.append("stale_pdf_manifest_pdf_hash")
+    source_rows = manifest.get("source_artifacts")
+    if not isinstance(source_rows, list) or not source_rows:
+        failures.append("missing_pdf_manifest_sources")
+        source_rows = []
+    observed_kinds = set()
+    for idx, row in enumerate(source_rows):
+        if not isinstance(row, dict):
+            failures.append(f"malformed_pdf_manifest_source:{idx}")
+            continue
+        kind = str(row.get("kind") or "")
+        observed_kinds.add(kind)
+        source_path = Path(str(row.get("path") or ""))
+        if not kind:
+            failures.append(f"pdf_manifest_source_missing_kind:{idx}")
+        if not source_path.exists():
+            failures.append(f"pdf_manifest_source_missing:{kind}")
+            continue
+        if row.get("sha256") != file_sha256(source_path):
+            failures.append(f"pdf_manifest_source_hash_stale:{kind}")
+    for prefix in FINAL_PDF_REQUIRED_SOURCE_PREFIXES:
+        if not any(kind.startswith(prefix) for kind in observed_kinds):
+            failures.append(f"pdf_manifest_missing_source_kind:{prefix}")
+    return "; ".join(failures)
+
+
+def _pdf_manifest_path(path: Path) -> Path:
+    return path.with_name(f"{path.name}.manifest.json")
 
 
 def _arxiv_status(source_dir: Path, archive: Path) -> dict[str, Any]:

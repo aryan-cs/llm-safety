@@ -191,6 +191,37 @@ def test_causal_patch_config_requires_system_and_matched_user_control() -> None:
     assert failures == []
 
 
+def test_causal_patch_config_requires_matched_patch_signature() -> None:
+    failures: list[str] = []
+
+    _check_causal_patch_config(
+        [
+            {
+                "name": "kv_int4_sim",
+                "patch_from_baseline": {
+                    "token_roles": ["system"],
+                    "max_tokens": 16,
+                    "selection": "first",
+                    "components": ["key"],
+                },
+            },
+            {
+                "name": "kv_int4_sim",
+                "patch_from_baseline": {
+                    "token_roles": ["user"],
+                    "match_token_count_to_roles": ["system"],
+                    "max_tokens": 16,
+                    "selection": "first",
+                    "components": ["key", "value"],
+                },
+            },
+        ],
+        failures,
+    )
+
+    assert any("matching components" in failure for failure in failures)
+
+
 def test_causal_patch_config_rejects_fixed_token_only_patch() -> None:
     failures: list[str] = []
 
@@ -224,6 +255,30 @@ def test_causal_restoration_readiness_requires_same_endpoint_intervals() -> None
     )
 
     assert failures == []
+
+
+def test_causal_restoration_readiness_requires_matched_patch_signature() -> None:
+    failures: list[str] = []
+
+    _check_causal_restoration_metric_readiness(
+        {
+            "causal_restoration": {
+                "public_refusal_safety::kv_int4_sim__patchkey__rolesystem__max16__selfirst": {
+                    "compressed_policy": "kv_int4_sim",
+                    "safety_restoration_fraction": 0.6,
+                    "safety_restoration_fraction_ci": {"ci_low": 0.4, "ci_high": 0.7},
+                },
+                "public_refusal_safety::kv_int4_sim__patchkey-value__roleuser__matchsystem__max16__selfirst": {
+                    "compressed_policy": "kv_int4_sim",
+                    "safety_restoration_fraction": 0.2,
+                    "safety_restoration_fraction_ci": {"ci_low": 0.1, "ci_high": 0.3},
+                },
+            }
+        },
+        failures,
+    )
+
+    assert any("same-endpoint" in failure for failure in failures)
 
 
 def test_causal_restoration_readiness_rejects_missing_intervals() -> None:

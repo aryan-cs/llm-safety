@@ -226,7 +226,7 @@ def test_latex_macro_export_writes_headline_result_macros(tmp_path: Path) -> Non
     )
 
     text = macro_path.read_text(encoding="utf-8")
-    assert "\\renewcommand{\\PrimaryRunId}{run\\_001}" in text
+    assert "\\renewcommand{\\PrimaryRunId}{primary public sweep}" in text
     assert "\\renewcommand{\\PrimaryTopSSEIPolicy}{kv\\_int4\\_sim}" in text
     assert "\\renewcommand{\\PrimaryTopSSEI}{0.250}" in text
     assert "\\renewcommand{\\PrimaryTopSSEICILow}{0.100}" in text

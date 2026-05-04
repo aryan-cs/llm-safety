@@ -235,7 +235,7 @@ Automated safety labels are coarse. The analysis therefore includes a blinded au
 The main figures are designed to make the proposed phenomenon interpretable at the level of prompt, policy, and token role, rather than only reporting aggregate scatterplots or bar charts. We use four figure families.
 
 \paragraph{Cache-state fingerprints.}
-For each policy-budget condition, the analysis renders a layer-by-token retention map with token roles on the horizontal axis and layers on the vertical axis. System, developer, user, template, and generated spans are shown as separate bands. A safety-specific erasure pattern should appear as a visible break or thinning in policy-token access, not merely as a lower scalar score.
+For each policy-budget condition, the analysis renders a layer-by-token retention map with token roles on the horizontal axis and layers on the vertical axis. System, hidden-system, user, template, and generated spans are shown as separate bands. A safety-specific erasure pattern should appear as a visible break or thinning in policy-token access, not merely as a lower scalar score.
 
 \paragraph{Safety-capability phase portraits.}
 Instead of a static scatterplot alone, each policy traces a trajectory through safety loss and capability loss as the cache budget tightens. A selective safety-erasure pattern is indicated by an initial increase in safety loss at approximately fixed capability loss, followed only later by broad capability degradation.
