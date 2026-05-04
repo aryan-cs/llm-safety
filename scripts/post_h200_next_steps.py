@@ -138,7 +138,12 @@ def post_h200_next_steps(status: dict[str, Any]) -> dict[str, Any]:
             and bool(gates.get("causal_human_audit_complete")),
             ready=fetched_evidence_prepared,
             command="bash scripts/aggregate_publication_human_audits.sh",
-            detail="Complete the leakage-capable blinded annotator CSVs, aggregate both publication audits, and require result-source and export-protocol hashes to match the exact run artifacts.",
+            detail=(
+                "Complete the leakage-capable blinded annotator CSVs, or run the documented "
+                "open local judge workflow before aggregation. Require result-source, "
+                "export-protocol, judge-model, and prompt-template provenance to match the "
+                "exact run artifacts."
+            ),
         ),
         _step(
             "assess_claims",
@@ -148,7 +153,7 @@ def post_h200_next_steps(status: dict[str, Any]) -> dict[str, Any]:
             and bool(gates.get("primary_human_audit_complete"))
             and bool(gates.get("causal_human_audit_complete")),
             command="uv run python scripts/assess_claims.py --primary-results-dir results/h200_qwen_full_sweep --causal-results-dir results/h200_causal_patch_qwen7b --primary-audit-summary paper/audit/h200_qwen_full_sweep_summary/human_audit_summary.json --causal-audit-summary paper/audit/h200_causal_patch_qwen7b_summary/human_audit_summary.json --output-dir paper/generated/claim_assessment --require-human-audit-support --require-cache-mediated-claim",
-            detail="Gate the manuscript claim on H1, H2, H3, and human-audit support; do not rewrite thresholds after seeing results.",
+            detail="Gate the manuscript claim on H1, H2, H3, and declared audit support; do not rewrite thresholds after seeing results.",
         ),
         _step(
             "build_publication_bundle",

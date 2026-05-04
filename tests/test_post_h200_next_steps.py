@@ -306,7 +306,7 @@ def test_post_h200_next_steps_requires_audits_before_claims() -> None:
     assert report["steps"][2]["state"] == "ready"
     assert report["steps"][3]["state"] == "blocked"
     assert report["steps"][2]["command"] == "bash scripts/aggregate_publication_human_audits.sh"
-    assert "Complete the leakage-capable blinded annotator CSVs" in report["steps"][2]["detail"]
+    assert "open local judge workflow" in report["steps"][2]["detail"]
 
 
 def test_post_h200_next_steps_marks_publication_bundle_ready_after_claims() -> None:
