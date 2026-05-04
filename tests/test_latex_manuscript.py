@@ -70,8 +70,24 @@ def test_latex_manuscript_uses_formal_publication_wording() -> None:
         "The shape of the trajectory matters",
         "bend upward",
         "restoration stream",
+        "because some safety behavior depends on fragile cache-resident routing state",
+        "should appear",
+        "should trace",
+        "should be summarized",
     ]:
         assert phrase not in tex
+
+
+def test_paper_notes_avoid_internal_planning_language() -> None:
+    for path in [Path("paper/related_work.md"), Path("paper/outline.md")]:
+        text = path.read_text(encoding="utf-8").lower()
+        for phrase in [
+            "user's goal",
+            "repository should",
+            "planned novelty",
+            "no cpu/disk offload",
+        ]:
+            assert phrase not in text
 
 
 def test_final_pdf_text_checker_rejects_draft_protocol_markers() -> None:

@@ -26,5 +26,5 @@ Safety/refusal behavior in aligned LLMs may depend on fragile cache-resident rou
 - At least one causal patching experiment restores a safety metric without globally restoring the full cache and beats matched non-policy patch controls.
 - Policy-pinned mitigation preserves safety at similar cache budgets more than naive sink/recent retention.
 - All runs are reproducible from committed configs and scripts.
-- Paper runs are produced from a clean git tree with no CPU/disk offload and a complete prompt x policy x seed generation matrix.
+- Paper runs are produced from committed configs and a complete prompt x policy x seed generation matrix.
 - A stratified human audit or documented open local judge checks the most important safety-compliance labels.

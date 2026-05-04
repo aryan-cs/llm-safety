@@ -97,7 +97,7 @@ The present manuscript is a registered analysis protocol and reports no empirica
 \maketitle
 
 \begin{abstract}
-Inference systems increasingly compress, evict, or quantize key-value (KV) caches to reduce serving cost and extend usable context. This paper tests a safety-specific hypothesis: cache optimizations can selectively weaken refusal and policy-following behavior while preserving ordinary task capability, because some safety behavior depends on fragile cache-resident routing state. We call the target phenomenon \emph{cache-mediated safety erasure} only if three claims are supported: cache interventions degrade safety behavior, the degradation is larger than matched capability degradation, and targeted restoration or protection of policy-relevant cache slices recovers refusal more than matched non-policy controls. \EmpiricalStatusSentence
+Inference systems increasingly compress, evict, or quantize key-value (KV) caches to reduce serving cost and extend usable context. This paper tests a safety-specific hypothesis: cache optimizations can selectively weaken refusal and policy-following behavior while preserving ordinary task capability, under the hypothesis that some safety behavior may depend on fragile cache-resident routing state. We call the target phenomenon \emph{cache-mediated safety erasure} only if three claims are supported: cache interventions degrade safety behavior, the degradation is larger than matched capability degradation, and targeted restoration or protection of policy-relevant cache slices recovers refusal more than matched non-policy controls. \EmpiricalStatusSentence
 \end{abstract}
 
 \section{Introduction}
@@ -235,7 +235,7 @@ Automated safety labels are coarse. The analysis therefore includes a blinded au
 The main figures are designed to make the proposed phenomenon interpretable at the level of prompt, policy, and token role, rather than only reporting aggregate scatterplots or bar charts. We use four figure families.
 
 \paragraph{Cache-state fingerprints.}
-For each policy-budget condition, the analysis renders a layer-by-token retention map with token roles on the horizontal axis and layers on the vertical axis. System, hidden-system, user, template, and generated spans are shown as separate bands. A safety-specific erasure pattern should appear as a visible break or thinning in policy-token access, not merely as a lower scalar score.
+For each policy-budget condition, the analysis renders a layer-by-token retention map with token roles on the horizontal axis and layers on the vertical axis. System, hidden-system, user, template, and generated spans are shown as separate bands. A safety-specific erasure pattern is diagnosed by a visible break or thinning in policy-token access, not merely by a lower scalar score.
 
 \paragraph{Safety-capability phase portraits.}
 Instead of a static scatterplot alone, each policy traces a trajectory through safety loss and capability loss as the cache budget tightens. A selective safety-erasure pattern is indicated by an initial increase in safety loss at approximately fixed capability loss, followed only later by broad capability degradation.
@@ -251,7 +251,7 @@ For audited prompts, the analysis embeds each prompt-condition pair using open e
 \begin{figure}[t]
   \centering
   \maybeincludegraphic{../../results/h200_qwen_full_sweep/figures/safety_capability_phase_portrait.pdf}{0.92\linewidth}{Safety degradation versus capability degradation by policy and budget.}
-  \caption{Safety-capability phase portrait. Each policy should trace a trajectory as cache budgets tighten. A safety-erasure pattern appears as upward movement before rightward capability collapse.}
+  \caption{Safety-capability phase portrait. Policies trace trajectories as cache budgets tighten. A safety-erasure pattern appears as upward movement before rightward capability collapse.}
   \label{fig:safety-capability}
 \end{figure}
 
@@ -323,7 +323,7 @@ The central causal claim requires system-role restoration or pinning to outperfo
 \maybeinputtable{../audit/h200_qwen_full_sweep_summary/human_audit_deltas_table.tex}{Report paired baseline-versus-treatment human-audit deltas for unsafe compliance, refusal correctness, leakage, and benign over-refusal.}
 \maybeinputtable{../audit/h200_causal_patch_qwen7b_summary/human_audit_summary_table.tex}{Report blinded causal-diagnostic human-audit label rates before making restoration claims.}
 \maybeinputtable{../audit/h200_causal_patch_qwen7b_summary/human_audit_deltas_table.tex}{Report paired causal-diagnostic human-audit deltas for system-role patching, matched non-policy patching, and policy-pinned mitigation.}
-Qualitative examples should be summarized at the category level rather than reproduced verbatim when they contain procedural harmful details.
+Qualitative examples are summarized at the category level rather than reproduced verbatim when they contain procedural harmful details.
 
 \section{Discussion}
 
