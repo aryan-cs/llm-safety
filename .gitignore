@@ -37,3 +37,4 @@ paper/audit/*_summary/
 *.log
 *.out
 *.pdf
+*.pdf.manifest.json
