@@ -218,13 +218,20 @@ def _audit_status(audit_dir: Path, results_dir: Path) -> dict[str, Any]:
 
 def _claim_status(path: Path) -> dict[str, Any]:
     assessment = _read_json(path)
-    passed = bool(assessment.get("publication_gate", {}).get("passed")) if assessment else False
+    failures = _claim_failures(assessment)
     return {
         "path": str(path),
         "exists": path.exists(),
-        "passed": passed,
+        "passed": bool(assessment) and not failures,
+        "failures": failures,
         "passed_claim_count": assessment.get("passed_claim_count") if assessment else None,
         "recommended_framing": assessment.get("recommended_framing") if assessment else None,
+        "human_audit_required": (assessment.get("human_audit_support") or {}).get("required")
+        if assessment
+        else None,
+        "human_audit_passed": (assessment.get("human_audit_support") or {}).get("passed")
+        if assessment
+        else None,
     }
 
 
@@ -265,6 +272,23 @@ def _audit_result_source_failures(manifest: dict[str, Any], results_dir: Path) -
     return failures
 
 
+def _claim_failures(assessment: dict[str, Any]) -> list[str]:
+    if not assessment:
+        return []
+    failures = []
+    if not assessment.get("publication_gate", {}).get("passed"):
+        failures.append("publication_gate_failed")
+    audit_support = assessment.get("human_audit_support")
+    if not isinstance(audit_support, dict):
+        failures.append("missing_human_audit_support")
+    else:
+        if audit_support.get("required") is not True:
+            failures.append("human_audit_support_not_required")
+        if audit_support.get("passed") is not True:
+            failures.append("human_audit_support_failed")
+    return failures
+
+
 def _artifact_line(label: str, status: dict[str, Any]) -> str:
     state = "complete" if status["complete"] else "blocked"
     details = []
@@ -280,7 +304,10 @@ def _artifact_line(label: str, status: dict[str, Any]) -> str:
 
 def _claim_line(status: dict[str, Any]) -> str:
     state = "pass" if status["passed"] else "blocked"
-    return f"- claim assessment: `{state}` at `{status['path']}`"
+    suffix = ""
+    if status.get("failures"):
+        suffix = " (failed: " + ", ".join(status["failures"]) + ")"
+    return f"- claim assessment: `{state}` at `{status['path']}`{suffix}"
 
 
 def _pdf_line(status: dict[str, Any]) -> str:

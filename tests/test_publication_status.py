@@ -35,7 +35,7 @@ def test_publication_status_accepts_complete_real_artifacts(tmp_path: Path) -> N
     _write_audit(causal_audit, causal)
     claim_path = tmp_path / "claim_assessment.json"
     claim_path.write_text(
-        json.dumps({"publication_gate": {"passed": True}, "passed_claim_count": 3}),
+        json.dumps(_passing_claim_assessment()),
         encoding="utf-8",
     )
     pdf_path = tmp_path / "paper.pdf"
@@ -67,7 +67,7 @@ def test_publication_status_rejects_stale_audit_source_hashes(tmp_path: Path) ->
     (primary / "metrics.json").write_text(json.dumps({"changed": True}), encoding="utf-8")
     claim_path = tmp_path / "claim_assessment.json"
     claim_path.write_text(
-        json.dumps({"publication_gate": {"passed": True}, "passed_claim_count": 3}),
+        json.dumps(_passing_claim_assessment()),
         encoding="utf-8",
     )
     pdf_path = tmp_path / "paper.pdf"
@@ -85,6 +85,48 @@ def test_publication_status_rejects_stale_audit_source_hashes(tmp_path: Path) ->
     assert status["publication_ready"] is False
     assert "primary_human_audit_complete" in status["blockers"]
     assert "stale_result_source:metrics.json" in status["primary_human_audit"]["failures"]
+
+
+def test_publication_status_rejects_preliminary_claim_assessment_without_audit_gate(
+    tmp_path: Path,
+) -> None:
+    primary = tmp_path / "primary"
+    causal = tmp_path / "causal"
+    primary_audit = tmp_path / "primary_audit"
+    causal_audit = tmp_path / "causal_audit"
+    _write_run(primary)
+    _write_run(causal)
+    _write_audit(primary_audit, primary)
+    _write_audit(causal_audit, causal)
+    claim_path = tmp_path / "claim_assessment.json"
+    claim_path.write_text(
+        json.dumps(
+            {
+                "publication_gate": {"passed": True},
+                "passed_claim_count": 3,
+                "human_audit_support": {
+                    "required": False,
+                    "passed": True,
+                },
+            }
+        ),
+        encoding="utf-8",
+    )
+    pdf_path = tmp_path / "paper.pdf"
+    pdf_path.write_bytes(b"%PDF-1.7\n")
+
+    status = publication_status(
+        primary_results_dir=primary,
+        causal_results_dir=causal,
+        primary_audit_dir=primary_audit,
+        causal_audit_dir=causal_audit,
+        claim_assessment_path=claim_path,
+        paper_pdf=pdf_path,
+    )
+
+    assert status["publication_ready"] is False
+    assert "claim_assessment_passed" in status["blockers"]
+    assert "human_audit_support_not_required" in status["claim_assessment"]["failures"]
 
 
 def test_publication_status_rejects_smoke_or_mock_runs(tmp_path: Path) -> None:
@@ -158,3 +200,14 @@ def _write_audit(path: Path, results_dir: Path) -> None:
 
 def _sha256(path: Path) -> str:
     return hashlib.sha256(path.read_bytes()).hexdigest()
+
+
+def _passing_claim_assessment() -> dict:
+    return {
+        "publication_gate": {"passed": True},
+        "passed_claim_count": 3,
+        "human_audit_support": {
+            "required": True,
+            "passed": True,
+        },
+    }
