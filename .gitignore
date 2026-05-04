@@ -1,4 +1,5 @@
 .DS_Store
+.nfs*
 .venv/
 __pycache__/
 *.py[cod]
