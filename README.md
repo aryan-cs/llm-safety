@@ -197,6 +197,12 @@ Estimate prompt counts needed for a target confidence interval width:
 uv run python scripts/plan_ci_power.py --results-dir results/<run_id> --target-ci-width 0.08
 ```
 
+Summarize publication blockers without mutating artifacts:
+
+```bash
+uv run python scripts/report_publication_status.py
+```
+
 Export a small blinded human-audit sheet:
 
 ```bash
