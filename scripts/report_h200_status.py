@@ -215,7 +215,7 @@ def _process_rows() -> list[dict[str, str]]:
     for line in result.stdout.splitlines()[1:]:
         if not any(pattern in line for pattern in PROCESS_PATTERNS):
             continue
-        if "report_h200_status.py" in line:
+        if _is_status_probe_process(line):
             continue
         parts = line.split(None, 4)
         if len(parts) < 5:
@@ -230,6 +230,16 @@ def _process_rows() -> list[dict[str, str]]:
             }
         )
     return rows
+
+
+def _is_status_probe_process(line: str) -> bool:
+    probe_markers = [
+        "report_h200_status.py",
+        "ps -eo",
+        "grep -E",
+        "nvidia-smi --query",
+    ]
+    return any(marker in line for marker in probe_markers)
 
 
 def _artifact_status(repo_dir: Path) -> list[dict[str, Any]]:

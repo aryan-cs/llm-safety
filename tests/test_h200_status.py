@@ -6,6 +6,7 @@ sys.path.insert(0, str(Path("scripts").resolve()))
 from report_h200_status import (
     _artifact_status,
     _gpu_gate_likely_blocked,
+    _is_status_probe_process,
     _parse_compute_app_line,
     _parse_gpu_query_line,
     _run,
@@ -37,6 +38,12 @@ def test_parse_compute_app_line() -> None:
     assert parsed == {"pid": "1234", "process_name": "python", "used_memory_mib": 4096}
     assert _parse_compute_app_line("not enough fields") is None
     assert _parse_compute_app_line("1234, python, N/A") is None
+
+
+def test_status_probe_process_filter_skips_monitoring_shells() -> None:
+    assert _is_status_probe_process("bash -c ps -eo pid,ppid,stat,etime,cmd | grep -E wait")
+    assert _is_status_probe_process("python scripts/report_h200_status.py")
+    assert not _is_status_probe_process("bash scripts/wait_for_h200_gpu.sh")
 
 
 def test_run_reports_missing_executable() -> None:
