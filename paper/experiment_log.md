@@ -62,3 +62,16 @@ Required fields for each entry:
 - wait history: `43` samples over `210.1` minutes; latest gate block window is `utilization` for `15` samples over `70.0` minutes
 - support artifact: `logs/h200/h200_support_bundle_latest.tar.gz` contains only infrastructure diagnostics and explicitly excludes model generations and paper evidence
 - decision: keep the launcher waiting; escalate the generated admin report/support bundle or release/restart the notebook allocation externally; do not cite this as evidence
+
+## 2026-05-04 H200 Primary Sweep Active
+
+- date: 2026-05-04
+- commit hash: `2e22cba` on the H200 checkout; local publication-gate hardening has advanced to `7653ede` and must be applied only after the active run completes
+- config path: `configs/experiments/h200_qwen_full_sweep.yaml`
+- run id: `h200_qwen_full_sweep`
+- machine / GPU: UIUC H200 notebook
+- model: `Qwen/Qwen2.5-14B-Instruct`
+- prompt suites: prepared public suites plus built-in smoke suites; primary generation matrix expected count is `25299`
+- cache policies: registered primary sweep policies from the resolved H200 config
+- main metrics: no primary `metrics.json` yet; generation is in progress with `18454 / 25299` rows observed, and no causal diagnostic metrics have been produced
+- decision: keep the active launcher running; do not pull code or start a duplicate process on H200; after completion, fetch results locally and reaggregate with the latest clean `master` gates before making paper claims
