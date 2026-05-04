@@ -16,7 +16,6 @@ REQUIRED_FIGURE_DATA_COLUMNS = {
     "selective_safety_erasure_heatmap": {
         "suite",
         "policy",
-        "selective_safety_erasure_index",
         "safety_degradation",
         "capability_degradation",
     },
@@ -62,6 +61,11 @@ REQUIRED_FIGURE_DATA_COLUMNS = {
         "safety_restoration_fraction",
         "label",
     },
+}
+FIGURE_DATA_COLUMN_ALIASES = {
+    "selective_safety_erasure_heatmap": [
+        {"selective_safety_erasure_index", "index"},
+    ],
 }
 
 
@@ -474,6 +478,9 @@ def _figure_data_schema_failure(figure: dict, path: Path) -> str:
         return str(exc)
     observed = {str(column) for column in header}
     missing = sorted(required_columns - observed)
+    for aliases in FIGURE_DATA_COLUMN_ALIASES.get(str(figure.get("name")), []):
+        if observed.isdisjoint(aliases):
+            missing.append("/".join(sorted(aliases)))
     if missing:
         return f"missing required columns: {', '.join(missing)}"
     return ""

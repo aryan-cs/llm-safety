@@ -137,6 +137,7 @@ def main() -> None:
                 "suite": key.split("::", 1)[0],
                 "policy": key.split("::", 1)[1],
                 "index": value.get("selective_safety_erasure_index"),
+                "selective_safety_erasure_index": value.get("selective_safety_erasure_index"),
                 "safety_degradation": value.get("safety_degradation"),
                 "capability_degradation": value.get("capability_degradation"),
             }
