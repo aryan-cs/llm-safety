@@ -20,6 +20,12 @@ def main() -> None:
     parser.add_argument("--results-dir", required=True, type=Path)
     parser.add_argument("--output-dir", type=Path, default=Path("paper/audit"))
     parser.add_argument("--per-suite-policy", type=int, default=3)
+    parser.add_argument(
+        "--strategy",
+        choices=["effect", "random"],
+        default="effect",
+        help="Select highest automated baseline-vs-treatment shifts or random matched pairs.",
+    )
     parser.add_argument("--seed", type=int, default=0)
     args = parser.parse_args()
 
@@ -27,7 +33,7 @@ def main() -> None:
     if not rows:
         raise SystemExit(f"No generations found in {args.results_dir}")
     run_id = args.results_dir.name
-    sample = _stratified_sample(rows, args.per_suite_policy, args.seed)
+    sample = _stratified_sample(rows, args.per_suite_policy, args.seed, strategy=args.strategy)
     audit_pairs = [_audit_pair(row, run_id, idx) for idx, row in enumerate(sample)]
     blinded_rows = [pair[0] for pair in audit_pairs]
     key_rows = [pair[1] for pair in audit_pairs]
@@ -40,7 +46,13 @@ def main() -> None:
     print(f"Wrote audit key to {key_jsonl_path}")
 
 
-def _stratified_sample(rows: list[dict[str, Any]], per_suite_policy: int, seed: int) -> list[dict[str, Any]]:
+def _stratified_sample(
+    rows: list[dict[str, Any]],
+    per_suite_policy: int,
+    seed: int,
+    *,
+    strategy: str = "effect",
+) -> list[dict[str, Any]]:
     rng = random.Random(seed)
     groups: dict[tuple[str, str, str, int], dict[str, Any]] = {}
     for row in rows:
@@ -75,11 +87,90 @@ def _stratified_sample(rows: list[dict[str, Any]], per_suite_policy: int, seed: 
                 if row_suite == suite and row_policy == policy
             }
             paired_keys = sorted(set(baseline).intersection(treatment))
-            rng.shuffle(paired_keys)
-            for prompt_id, seed_value in paired_keys[:per_suite_policy]:
+            selected_keys = _select_paired_keys(
+                paired_keys,
+                baseline,
+                treatment,
+                per_suite_policy=per_suite_policy,
+                rng=rng,
+                strategy=strategy,
+            )
+            for prompt_id, seed_value in selected_keys:
                 sampled[(suite, "none", prompt_id, seed_value)] = baseline[(prompt_id, seed_value)]
                 sampled[(suite, policy, prompt_id, seed_value)] = treatment[(prompt_id, seed_value)]
     return list(sampled.values())
+
+
+def _select_paired_keys(
+    paired_keys: list[tuple[str, int]],
+    baseline: dict[tuple[str, int], dict[str, Any]],
+    treatment: dict[tuple[str, int], dict[str, Any]],
+    *,
+    per_suite_policy: int,
+    rng: random.Random,
+    strategy: str,
+) -> list[tuple[str, int]]:
+    if strategy == "random":
+        shuffled = list(paired_keys)
+        rng.shuffle(shuffled)
+        return shuffled[:per_suite_policy]
+    if strategy != "effect":
+        raise ValueError(f"Unsupported audit sampling strategy: {strategy}")
+    scored = [
+        (
+            _pair_priority_score(baseline[(prompt_id, seed_value)], treatment[(prompt_id, seed_value)]),
+            prompt_id,
+            seed_value,
+        )
+        for prompt_id, seed_value in paired_keys
+    ]
+    scored.sort(key=lambda item: (-item[0], item[1], item[2]))
+    return [(prompt_id, seed_value) for _score, prompt_id, seed_value in scored[:per_suite_policy]]
+
+
+def _pair_priority_score(baseline: dict[str, Any], treatment: dict[str, Any]) -> float:
+    safety_drop = _positive_delta(baseline.get("safety_score"), treatment.get("safety_score"))
+    refusal_drop = _positive_delta(
+        baseline.get("refusal_expected_accuracy"), treatment.get("refusal_expected_accuracy")
+    )
+    leakage_increase = max(
+        _positive_delta(treatment.get("exact_leakage"), baseline.get("exact_leakage")),
+        _positive_delta(
+            treatment.get("rouge_l_leakage_recall"), baseline.get("rouge_l_leakage_recall")
+        ),
+    )
+    capability_drop = _positive_delta(baseline.get("capability_score"), treatment.get("capability_score"))
+    generated_shift = min(
+        0.1,
+        abs(
+            _float_or_zero(treatment.get("generated_word_count"))
+            - _float_or_zero(baseline.get("generated_word_count"))
+        )
+        / 200.0,
+    )
+    return max(safety_drop, refusal_drop, leakage_increase) + generated_shift - 0.25 * capability_drop
+
+
+def _positive_delta(left: Any, right: Any) -> float:
+    left_value = _maybe_float(left)
+    right_value = _maybe_float(right)
+    if left_value is None or right_value is None:
+        return 0.0
+    return max(0.0, left_value - right_value)
+
+
+def _float_or_zero(value: Any) -> float:
+    parsed = _maybe_float(value)
+    return parsed if parsed is not None else 0.0
+
+
+def _maybe_float(value: Any) -> float | None:
+    if value is None:
+        return None
+    try:
+        return float(value)
+    except (TypeError, ValueError):
+        return None
 
 
 def _audit_pair(row: dict[str, Any], run_id: str, idx: int) -> tuple[dict[str, Any], dict[str, Any]]:

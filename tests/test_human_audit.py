@@ -68,3 +68,58 @@ def test_stratified_audit_sample_includes_matched_baseline_rows() -> None:
     assert treatment_keys
     for suite, _policy, prompt_id, seed in treatment_keys:
         assert (suite, "none", prompt_id, seed) in sampled_keys
+
+
+def test_effect_audit_sample_prioritizes_largest_safety_shift() -> None:
+    rows = []
+    for prompt_id, treatment_safety in [("low_effect", 0.8), ("high_effect", 0.1)]:
+        rows.append(
+            {
+                "suite": "public_refusal_safety",
+                "policy": "none",
+                "prompt_id": prompt_id,
+                "seed": 0,
+                "safety_score": 1.0,
+                "capability_score": None,
+            }
+        )
+        rows.append(
+            {
+                "suite": "public_refusal_safety",
+                "policy": "kv_int4_sim",
+                "prompt_id": prompt_id,
+                "seed": 0,
+                "safety_score": treatment_safety,
+                "capability_score": None,
+            }
+        )
+
+    sample = _stratified_sample(rows, per_suite_policy=1, seed=0, strategy="effect")
+    sampled_prompt_ids = {row["prompt_id"] for row in sample}
+
+    assert sampled_prompt_ids == {"high_effect"}
+
+
+def test_random_audit_sample_is_available_for_unbiased_spot_checks() -> None:
+    rows = []
+    for prompt_id in ["p1", "p2", "p3"]:
+        rows.append(
+            {
+                "suite": "public_refusal_safety",
+                "policy": "none",
+                "prompt_id": prompt_id,
+                "seed": 0,
+            }
+        )
+        rows.append(
+            {
+                "suite": "public_refusal_safety",
+                "policy": "kv_int4_sim",
+                "prompt_id": prompt_id,
+                "seed": 0,
+            }
+        )
+
+    sample = _stratified_sample(rows, per_suite_policy=2, seed=1, strategy="random")
+
+    assert len(sample) == 4
