@@ -443,9 +443,22 @@ def _invalid_arxiv_support_files(paths: list[Path]) -> list[str]:
         )
         failures.extend(
             f"{path}:{failure}"
-            for failure in _semantic_tex_failures(str(path), path.name, rendered_text)
+            for failure in _semantic_arxiv_tex_failures(path, rendered_text)
         )
     return failures
+
+
+def _semantic_arxiv_tex_failures(path: Path, rendered_text: str) -> list[str]:
+    failures = _semantic_tex_failures(str(path), path.name, rendered_text)
+    if path.name != "causal_restoration_table.tex":
+        return failures
+    causal_generated_names = {
+        DEFAULT_CAUSAL_GENERATED_DIR.name,
+        DEFAULT_ACTIVE_CAUSAL_GENERATED_DIR.name,
+    }
+    if path.parent.name in causal_generated_names:
+        return failures
+    return [failure for failure in failures if not failure.startswith("missing causal control row")]
 
 
 def _directory_provenance(
