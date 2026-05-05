@@ -172,7 +172,7 @@ or git commit do not match the original run. Use
 unchanged and the newer code is a resume-only compatibility patch.
 
 If the H200 allocation expires and is not restarted for a while, keep the Mac
-working on a bounded Qwen 7B diagnostic instead of attempting the H200-only 14B
+working on a bounded Qwen 3B diagnostic instead of attempting the H200-only 14B
 or 32B sweeps locally:
 
 ```bash
@@ -181,8 +181,8 @@ bash scripts/run_mac_fallback.sh
 
 This fallback is intentionally conservative for a 24 GB M4 Pro: it checks macOS
 and the PyTorch MPS backend, requires at least 22 GiB unified memory, uses
-`configs/experiments/mac_qwen7b_causal_fallback.yaml`, writes artifacts to
-`results/mac_qwen7b_causal_fallback`, and isolates model downloads under
+`configs/experiments/mac_qwen3b_causal_fallback.yaml`, writes artifacts to
+`results/mac_qwen3b_causal_fallback`, and isolates model downloads under
 `.cache/mac_fallback`. By default it deletes `.cache/mac_fallback/huggingface`
 and `.cache/mac_fallback/torch` when the script exits, even on failure or
 interruption. It is a fallback diagnostic, not a replacement for the registered

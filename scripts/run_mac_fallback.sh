@@ -4,9 +4,9 @@ set -euo pipefail
 repo_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd -P)"
 cd "$repo_dir"
 
-config="${MAC_FALLBACK_CONFIG:-configs/experiments/mac_qwen7b_causal_fallback.yaml}"
-run_id="${MAC_FALLBACK_RUN_ID:-mac_qwen7b_causal_fallback}"
-paper_dir="${MAC_FALLBACK_PAPER_DIR:-paper/generated/mac_qwen7b_causal_fallback}"
+config="${MAC_FALLBACK_CONFIG:-configs/experiments/mac_qwen3b_causal_fallback.yaml}"
+run_id="${MAC_FALLBACK_RUN_ID:-mac_qwen3b_causal_fallback}"
+paper_dir="${MAC_FALLBACK_PAPER_DIR:-paper/generated/mac_qwen3b_causal_fallback}"
 cache_root="${MAC_FALLBACK_CACHE_ROOT:-$(pwd)/.cache/mac_fallback}"
 delete_models_after="${MAC_FALLBACK_DELETE_MODELS_AFTER:-1}"
 min_unified_memory_gb="${MAC_FALLBACK_MIN_UNIFIED_MEMORY_GB:-22}"

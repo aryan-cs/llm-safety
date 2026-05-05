@@ -3,10 +3,11 @@ from pathlib import Path
 from cache_safety_erasure.config import parse_experiment_config
 
 
-def test_mac_fallback_config_is_qwen7b_bounded_diagnostic() -> None:
-    config, _raw = parse_experiment_config("configs/experiments/mac_qwen7b_causal_fallback.yaml")
+def test_mac_fallback_config_is_qwen3b_bounded_diagnostic() -> None:
+    config, _raw = parse_experiment_config("configs/experiments/mac_qwen3b_causal_fallback.yaml")
 
-    assert config.model.model_id == "Qwen/Qwen2.5-7B-Instruct"
+    assert config.model.model_id == "Qwen/Qwen2.5-3B-Instruct"
+    assert config.model.revision == "aa8e72537993ba99e69dfaafa59ed015b17504d1"
     assert config.model.dtype == "float16"
     assert config.model.allow_cpu_offload is False
     assert config.generation.max_new_tokens <= 96
@@ -20,7 +21,7 @@ def test_mac_fallback_config_is_qwen7b_bounded_diagnostic() -> None:
 def test_mac_fallback_script_is_bounded_and_cleans_project_local_model_cache() -> None:
     script = Path("scripts/run_mac_fallback.sh").read_text(encoding="utf-8")
 
-    assert "configs/experiments/mac_qwen7b_causal_fallback.yaml" in script
+    assert "configs/experiments/mac_qwen3b_causal_fallback.yaml" in script
     assert 'if [[ "$run_id" == h200_* ]]' in script
     assert "MAC_FALLBACK_MIN_UNIFIED_MEMORY_GB:-22" in script
     assert "torch.backends.mps.is_available()" in script
