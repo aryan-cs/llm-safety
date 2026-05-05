@@ -325,6 +325,8 @@ def main() -> None:
     args.archive.parent.mkdir(parents=True, exist_ok=True)
     with tarfile.open(args.archive, "w:gz") as archive:
         for path in sorted(source_dir.rglob("*")):
+            if not path.is_file():
+                continue
             archive.add(path, arcname=path.relative_to(source_dir))
     print(f"Wrote {args.archive}")
 

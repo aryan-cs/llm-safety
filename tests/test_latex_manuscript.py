@@ -3,6 +3,7 @@ import json
 import re
 import subprocess
 import sys
+import tarfile
 from pathlib import Path
 
 sys.path.insert(0, str(Path("scripts").resolve()))
@@ -794,6 +795,9 @@ def test_arxiv_packager_records_file_provenance(tmp_path: Path) -> None:
     assert all(not Path(path).is_absolute() for path in manifest["copied_figures"])
     assert all(not Path(path).is_absolute() for path in manifest["copied_generated"])
     assert all(not Path(path).is_absolute() for path in manifest["copied_audit"])
+    with tarfile.open(archive, "r:gz") as tar:
+        member_names = [member.name for member in tar.getmembers()]
+    assert len(member_names) == len(set(member_names))
 
 
 def test_arxiv_packager_copies_optional_qwen32_only_when_requested(tmp_path: Path) -> None:
