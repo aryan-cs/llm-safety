@@ -226,6 +226,33 @@ def test_cache_stats_sink_uses_stable_schema_for_sparse_batches(tmp_path: Path) 
     assert str(schema.field("retained_generated_tokens").type) == "int64"
 
 
+def test_cache_stats_parquet_rebuild_uses_durable_jsonl_checkpoint(tmp_path: Path) -> None:
+    import sys
+
+    import pyarrow.parquet as pq
+
+    sys.path.insert(0, str(Path("scripts").resolve()))
+    from run_experiment import _CacheStatsSink, _rebuild_cache_stats_parquet_from_jsonl
+
+    parquet_path = tmp_path / "cache_stats.parquet"
+    jsonl_path = tmp_path / "cache_stats.jsonl"
+    sink = _CacheStatsSink(parquet_path, resume=False)
+    sink.write([{"prompt_id": "p1", "seed": 0, "policy": "none", "decode_step": 0}])
+    sink.close()
+    append_jsonl(
+        jsonl_path,
+        [
+            {"prompt_id": "p1", "seed": 0, "policy": "none", "decode_step": 0},
+            {"prompt_id": "p2", "seed": 0, "policy": "sliding_window", "decode_step": 0},
+        ],
+    )
+
+    _rebuild_cache_stats_parquet_from_jsonl(jsonl_path, parquet_path)
+
+    table = pq.read_table(parquet_path, columns=["prompt_id"])
+    assert table.column("prompt_id").to_pylist() == ["p1", "p2"]
+
+
 def test_empty_cache_stats_sink_writes_readable_schema(tmp_path: Path) -> None:
     import sys
 

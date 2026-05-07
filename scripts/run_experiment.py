@@ -238,6 +238,7 @@ def main() -> None:
     if cache_stat_rows:
         cache_stats_sink.write(cache_stat_rows)
     cache_stats_sink.close()
+    _rebuild_cache_stats_parquet_from_jsonl(cache_stats_jsonl_path, cache_stats_sink.path)
     _write_progress(
         run_dir,
         completed=len(rows),
@@ -708,6 +709,50 @@ def _cache_stats_table(rows: list[dict[str, Any]]) -> Any:
         pa.array([row[field.name] for row in normalized], type=field.type) for field in schema
     ]
     return pa.Table.from_arrays(arrays, schema=schema)
+
+
+def _rebuild_cache_stats_parquet_from_jsonl(jsonl_path: Path, parquet_path: Path) -> None:
+    if not jsonl_path.exists():
+        return
+    try:
+        import pyarrow.parquet as pq
+    except ModuleNotFoundError as exc:
+        raise RuntimeError("pyarrow is required for cache_stats.parquet.") from exc
+    temp_path = parquet_path.with_suffix(".parquet.rebuild.tmp")
+    schema = _cache_stats_schema()
+    row_count = 0
+    with pq.ParquetWriter(temp_path, schema) as writer:
+        for batch in _iter_cache_stat_jsonl_batches(jsonl_path):
+            row_count += len(batch)
+            writer.write_table(_align_table_to_schema(_cache_stats_table(batch), schema))
+    if row_count == 0:
+        pq.write_table(_cache_stats_table([]), temp_path)
+    temp_path.replace(parquet_path)
+
+
+def _iter_cache_stat_jsonl_batches(
+    path: Path, *, batch_size: int = 100_000
+) -> Any:
+    batch: list[dict[str, Any]] = []
+    with path.open("r", encoding="utf-8") as f:
+        for line_number, line in enumerate(f, start=1):
+            if not line.strip():
+                continue
+            try:
+                row = json.loads(line)
+            except json.JSONDecodeError as exc:
+                raise RuntimeError(
+                    f"{path} has malformed JSON at line {line_number}; "
+                    "refusing to rebuild cache_stats.parquet from partial data"
+                ) from exc
+            if not isinstance(row, dict):
+                raise RuntimeError(f"{path} line {line_number} is not a JSON object")
+            batch.append(row)
+            if len(batch) >= batch_size:
+                yield batch
+                batch = []
+    if batch:
+        yield batch
 
 
 def _copy_existing_cache_stats(path: Path, writer: Any, schema: Any) -> None:
