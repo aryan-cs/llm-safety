@@ -8,7 +8,9 @@ from cache_safety_erasure.cache_policies.cache_utils import (
     cache_l2_norm,
     cache_layer_count,
     cache_seq_len,
+    evicted_from_retained,
     maybe_from_legacy_cache,
+    slice_legacy_cache,
 )
 from cache_safety_erasure.config import GenerationConfig
 from cache_safety_erasure.evals.prompt_record import PromptRecord
@@ -51,6 +53,7 @@ def hf_generate(
     token_roles = token_roles_for_prompt(tokenizer, prompt, input_ids)
     cache_decisions: list[CachePolicyDecision] = []
     generated_ids: list[int] = []
+    native_cache_limit = _native_cache_limit(model, cache_position_mode)
 
     with torch.inference_mode():
         baseline_full_prompt_past = None
@@ -91,6 +94,14 @@ def hf_generate(
                 )
                 decision.metadata.update(patch_metadata)
             cache_decisions.append(decision)
+            past, native_decision = _enforce_native_cache_limit(
+                past,
+                max_cache_len=native_cache_limit,
+                step=0,
+                token_roles=token_roles[:-1],
+            )
+            if native_decision is not None:
+                cache_decisions.append(native_decision)
             outputs = _forward_one_token(
                 model=model,
                 token_id=last_prompt_token,
@@ -117,6 +128,14 @@ def hf_generate(
                 )
                 decision.metadata.update(patch_metadata)
             cache_decisions.append(decision)
+            past, native_decision = _enforce_native_cache_limit(
+                past,
+                max_cache_len=native_cache_limit,
+                step=1,
+                token_roles=token_roles,
+            )
+            if native_decision is not None:
+                cache_decisions.append(native_decision)
             absolute_position = int(input_ids.shape[-1])
             decode_step_start = 2
         else:
@@ -146,6 +165,14 @@ def hf_generate(
                 )
                 decision.metadata.update(patch_metadata)
             cache_decisions.append(decision)
+            past, native_decision = _enforce_native_cache_limit(
+                past,
+                max_cache_len=native_cache_limit,
+                step=0,
+                token_roles=token_roles,
+            )
+            if native_decision is not None:
+                cache_decisions.append(native_decision)
             absolute_position = int(input_ids.shape[-1])
             decode_step_start = 1
         next_token = _sample_next_token(outputs.logits[:, -1, :], generation_config)
@@ -183,6 +210,14 @@ def hf_generate(
                     token_roles=token_roles,
                 )
                 decision.metadata.update(patch_metadata)
+            past, native_decision = _enforce_native_cache_limit(
+                past,
+                max_cache_len=native_cache_limit,
+                step=step,
+                token_roles=extended_roles,
+            )
+            if native_decision is not None:
+                cache_decisions.append(native_decision)
             next_token = _sample_next_token(outputs.logits[:, -1, :], generation_config)
 
             if _has_stop_string(tokenizer, generated_ids, generation_config.stop_strings):
@@ -191,6 +226,62 @@ def hf_generate(
     decoded = tokenizer.decode(generated_ids, skip_special_tokens=True).strip()
     _ = cache_layer_count  # imported for downstream callers and import validation.
     return GenerationResult(text=decoded, cache_decisions=cache_decisions)
+
+
+def _native_cache_limit(model: Any, cache_position_mode: str) -> int | None:
+    if cache_position_mode != "compact":
+        return None
+    window = getattr(getattr(model, "config", None), "sliding_window", None)
+    if window is None:
+        return None
+    window = int(window)
+    if window <= 1:
+        return None
+    return window - 1
+
+
+def _enforce_native_cache_limit(
+    past: Any,
+    *,
+    max_cache_len: int | None,
+    step: int,
+    token_roles: list[str] | None,
+) -> tuple[Any, CachePolicyDecision | None]:
+    if max_cache_len is None:
+        return past, None
+    seq_len = cache_seq_len(past)
+    if seq_len <= max_cache_len:
+        return past, None
+    before_norm = cache_l2_norm(past)
+    retained = tuple(range(seq_len - max_cache_len, seq_len))
+    sliced = slice_legacy_cache(past, retained)
+    after_norm = cache_l2_norm(sliced) if retained else 0.0
+    evicted = evicted_from_retained(seq_len, retained)
+    metadata = {
+        "cache_l2_before": before_norm,
+        "cache_l2_after": after_norm,
+        "native_sliding_window": max_cache_len + 1,
+        "native_cache_limit": max_cache_len,
+        "native_cache_enforced": True,
+    }
+    if token_roles:
+        for role in sorted(set(token_roles[:seq_len])):
+            retained_count = sum(
+                1 for idx in retained if idx < len(token_roles) and token_roles[idx] == role
+            )
+            evicted_count = sum(
+                1 for idx in evicted if idx < len(token_roles) and token_roles[idx] == role
+            )
+            metadata[f"retained_{role}_tokens"] = retained_count
+            metadata[f"evicted_{role}_tokens"] = evicted_count
+    return maybe_from_legacy_cache(sliced, past), CachePolicyDecision(
+        "native_sliding_window",
+        step,
+        seq_len,
+        retained,
+        evicted,
+        metadata,
+    )
 
 
 def patch_from_baseline_cache(

@@ -81,3 +81,26 @@ def test_user_pinned_uses_user_tokens_as_matched_control() -> None:
     assert decision.metadata["protected_candidate_count"] == 7
     assert decision.metadata["protected_retained_count"] == 4
     assert set(decision.retained_indices).issubset(set(range(3, 10)))
+
+
+@pytest.mark.skipif(torch_spec is None, reason="torch is not installed in the base interpreter")
+def test_native_cache_limit_trims_before_sliding_window_attention() -> None:
+    import torch
+
+    from cache_safety_erasure.generation.hf_generate import _enforce_native_cache_limit
+
+    cache = ((torch.randn(1, 2, 10, 4), torch.randn(1, 2, 10, 4)),)
+    trimmed, decision = _enforce_native_cache_limit(
+        cache,
+        max_cache_len=6,
+        step=3,
+        token_roles=["system"] * 3 + ["user"] * 7,
+    )
+
+    assert decision is not None
+    assert trimmed[0][0].shape[-2] == 6
+    assert decision.policy_name == "native_sliding_window"
+    assert decision.retained_indices == tuple(range(4, 10))
+    assert decision.metadata["native_cache_limit"] == 6
+    assert decision.metadata["evicted_system_tokens"] == 3
+    assert decision.metadata["retained_user_tokens"] == 6
