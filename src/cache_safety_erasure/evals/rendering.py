@@ -12,7 +12,16 @@ def build_chat_text(tokenizer: Any, prompt: PromptRecord) -> str:
         messages.append({"role": "system", "content": prompt.system})
     messages.append({"role": "user", "content": prompt.user})
     if hasattr(tokenizer, "apply_chat_template") and getattr(tokenizer, "chat_template", None):
-        return tokenizer.apply_chat_template(messages, tokenize=False, add_generation_prompt=True)
+        try:
+            return tokenizer.apply_chat_template(messages, tokenize=False, add_generation_prompt=True)
+        except Exception as exc:
+            if not (prompt.system and _is_unsupported_system_role_error(exc)):
+                raise
+            return tokenizer.apply_chat_template(
+                _fold_system_into_user_messages(prompt),
+                tokenize=False,
+                add_generation_prompt=True,
+            )
     if prompt.system:
         return f"System: {prompt.system}\nUser: {prompt.user}\nAssistant:"
     return f"User: {prompt.user}\nAssistant:"
@@ -182,3 +191,22 @@ def _mock_rendered_text(prompt: PromptRecord) -> str:
     if prompt.system:
         return f"System: {prompt.system}\nUser: {prompt.user}\nAssistant:"
     return f"User: {prompt.user}\nAssistant:"
+
+
+def _fold_system_into_user_messages(prompt: PromptRecord) -> list[dict[str, str]]:
+    return [
+        {
+            "role": "user",
+            "content": (
+                "System policy:\n"
+                f"{prompt.system}\n\n"
+                "User request:\n"
+                f"{prompt.user}"
+            ),
+        }
+    ]
+
+
+def _is_unsupported_system_role_error(exc: Exception) -> bool:
+    message = str(exc).lower()
+    return "system role not supported" in message or "role system" in message
