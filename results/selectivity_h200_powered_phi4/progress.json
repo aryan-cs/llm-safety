@@ -1,0 +1,10 @@
+{
+  "activity": "complete",
+  "completed": 39030,
+  "current": {
+    "model_id": "microsoft/phi-4"
+  },
+  "expected": 39030,
+  "progress_percent": 100.0,
+  "updated_at": "20260512T203759Z"
+}
