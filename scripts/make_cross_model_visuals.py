@@ -170,30 +170,101 @@ def fig_label_heatmap(df: pd.DataFrame, out: Path) -> None:
     plt.close(fig)
 
 
-def fig_policy_dumbbell(df: pd.DataFrame, out: Path, metric: str = "refusal_correct") -> None:
-    valid = df[~df["_dropped"]]
-    by_mp = valid.groupby(["model_key", "policy"])[metric].mean().reset_index()
-    none_rates = by_mp[by_mp["policy"] == "none"].set_index("model_key")[metric]
-    policies = [p for p in POLICY_ORDER if p in set(by_mp["policy"]) and p != "none"]
-    if not policies:
+def fig_ssei_forest(results_root: Path, out: Path) -> None:
+    """Forest plot of SSEI (effect size) with 95% CIs across model x policy.
+
+    Reads policy_level_contrasts from each model's metrics.json (the
+    bootstrap-CI source of truth) rather than re-aggregating judge labels.
+    Effect size on x-axis; one row per (model, policy); colored by policy.
+    Reference line at SSEI=0 makes the "excludes zero?" test visual.
+    """
+    rows: list[dict] = []
+    for run_dir in sorted(results_root.glob("selectivity_h200_powered_*")):
+        if run_dir.name == "selectivity_h200_powered_combined":
+            continue
+        metrics_path = run_dir / "metrics.json"
+        if not metrics_path.exists():
+            continue
+        try:
+            metrics = json.loads(metrics_path.read_text())
+        except json.JSONDecodeError:
+            continue
+        model_key = run_dir.name.removeprefix("selectivity_h200_powered_")
+        contrasts = metrics.get("policy_level_contrasts") or {}
+        for policy, payload in contrasts.items():
+            ssei = payload.get("selective_safety_erasure_index")
+            ci = payload.get("selective_safety_erasure_index_ci") or {}
+            if ssei is None:
+                continue
+            rows.append(
+                {
+                    "model_key": model_key,
+                    "policy": policy,
+                    "ssei": ssei,
+                    "ci_low": ci.get("ci_low"),
+                    "ci_high": ci.get("ci_high"),
+                }
+            )
+    if not rows:
         return
-    fig, axes = plt.subplots(1, len(policies), figsize=(2.5 * len(policies) + 2, 0.4 * by_mp["model_key"].nunique() + 3), sharey=True)
-    if len(policies) == 1:
-        axes = [axes]
-    for ax, policy in zip(axes, policies, strict=True):
-        treat = by_mp[by_mp["policy"] == policy].set_index("model_key")[metric]
-        rows = sorted(treat.index.intersection(none_rates.index))
-        for i, m in enumerate(rows):
-            ax.plot([none_rates[m], treat[m]], [i, i], color="#9ca3af", linewidth=2, zorder=1)
-            ax.scatter(none_rates[m], i, color="#4b5563", s=40, zorder=2, label="baseline (none)" if i == 0 else None)
-            ax.scatter(treat[m], i, color=model_color(m), s=70, zorder=3, label=m if i == 0 else None)
-        ax.set_yticks(range(len(rows)))
-        ax.set_yticklabels(rows)
-        ax.set_xlim(0, 1.0)
-        ax.set_xlabel(metric)
-        ax.set_title(short_policy(policy), fontsize=10)
-        ax.grid(axis="x", color="#e5e7eb")
-    fig.suptitle(f"{metric} shift: cache-policy treatment vs baseline (none)", y=1.02)
+
+    # Sort by model_key then policy order for stable layout
+    model_order = sorted({r["model_key"] for r in rows})
+    policy_order = [p for p in POLICY_ORDER if p in {r["policy"] for r in rows} and p != "none"]
+    if not policy_order:
+        policy_order = sorted({r["policy"] for r in rows if r["policy"] != "none"})
+
+    # Build y-axis labels: group by model, then policies within model
+    y_labels = []
+    y_data = []
+    for model_key in model_order:
+        for policy in policy_order:
+            match = next(
+                (r for r in rows if r["model_key"] == model_key and r["policy"] == policy),
+                None,
+            )
+            if match is None:
+                continue
+            y_labels.append(f"{model_key}  ·  {short_policy(policy)}")
+            y_data.append(match)
+
+    fig_h = max(6.0, 0.32 * len(y_data) + 2.0)
+    fig, ax = plt.subplots(figsize=(11, fig_h))
+
+    for i, r in enumerate(y_data):
+        lo = r["ci_low"] if r["ci_low"] is not None else r["ssei"]
+        hi = r["ci_high"] if r["ci_high"] is not None else r["ssei"]
+        crosses_zero = (lo is not None and hi is not None and lo <= 0 <= hi)
+        color = "#94a3b8" if crosses_zero else model_color(r["model_key"])
+        ax.plot([lo, hi], [i, i], color=color, linewidth=2.0, alpha=0.85, zorder=2)
+        ax.scatter(r["ssei"], i, color=color, s=44, edgecolor="black", linewidth=0.4, zorder=3)
+
+    ax.axvline(0, color="#1f2937", linewidth=0.9, linestyle="--", zorder=1)
+    ax.set_yticks(range(len(y_labels)))
+    ax.set_yticklabels(y_labels, fontsize=8.5)
+    ax.set_xlabel("Selective Safety Erasure Index (SSEI) with 95% bootstrap CI", fontsize=10)
+    ax.set_title(
+        "Per-model, per-policy SSEI forest plot\n(gray = 95% CI overlaps 0; colored = CI excludes 0)",
+        fontsize=11,
+    )
+    ax.grid(axis="x", color="#e5e7eb", zorder=0)
+    ax.invert_yaxis()
+
+    # Light horizontal banding by model
+    last_model = None
+    band_start = 0
+    band_color = "#f8fafc"
+    for i, label in enumerate(y_labels):
+        model_key = label.split("  ·  ")[0]
+        if model_key != last_model:
+            if last_model is not None and (band_start // 1) % 2 == 1:
+                ax.axhspan(band_start - 0.5, i - 0.5, color=band_color, zorder=0)
+            band_start = i
+            last_model = model_key
+    if (band_start // 1) % 2 == 1:
+        ax.axhspan(band_start - 0.5, len(y_labels) - 0.5, color=band_color, zorder=0)
+
+    plt.tight_layout()
     fig.savefig(out, format="png")
     plt.close(fig)
 
@@ -205,15 +276,38 @@ def fig_unsafe_vs_overrefusal(df: pd.DataFrame, out: Path) -> None:
         over=("over_refusal", "mean"),
         n=("audit_id", "size"),
     )
-    fig, ax = plt.subplots(figsize=(8, 7))
-    for m, row in grouped.iterrows():
-        ax.scatter(row["unsafe"], row["over"], s=80 + math.log1p(row["n"]) * 40, color=model_color(m), edgecolor="black", linewidth=0.5, alpha=0.85)
-        ax.annotate(m, (row["unsafe"], row["over"]), fontsize=9, xytext=(5, 5), textcoords="offset points")
+    fig, ax = plt.subplots(figsize=(9, 7.5))
+    rng = np.random.default_rng(7)
+    # Spread overlapping labels by jittering label offsets per-model
+    sorted_models = sorted(grouped.index, key=lambda m: (grouped.loc[m, "unsafe"], grouped.loc[m, "over"]))
+    used_positions: list[tuple[float, float]] = []
+    for m in sorted_models:
+        row = grouped.loc[m]
+        x, y = row["unsafe"], row["over"]
+        ax.scatter(x, y, s=80 + math.log1p(row["n"]) * 40, color=model_color(m), edgecolor="black", linewidth=0.5, alpha=0.85, zorder=3)
+        # Pick a label offset that doesn't collide with existing labels
+        candidate_offsets = [(8, 8), (8, -12), (-90, 8), (-90, -12), (8, 20), (-90, 20)]
+        chosen = candidate_offsets[0]
+        for off in candidate_offsets:
+            pos_pixel = (off[0] + rng.uniform(-2, 2), off[1] + rng.uniform(-2, 2))
+            too_close = any(abs(pos_pixel[0] - up[0]) < 60 and abs(pos_pixel[1] - up[1]) < 14 for up in used_positions)
+            if not too_close:
+                chosen = pos_pixel
+                used_positions.append(pos_pixel)
+                break
+        else:
+            chosen = candidate_offsets[-1]
+            used_positions.append(chosen)
+        ax.annotate(m, (x, y), fontsize=8.5, xytext=chosen, textcoords="offset points",
+                    bbox=dict(boxstyle="round,pad=0.18", facecolor="white", edgecolor="none", alpha=0.85))
     ax.axhline(0.1, color="#d4d4d4", linestyle="--", linewidth=0.7)
     ax.axvline(0.1, color="#d4d4d4", linestyle="--", linewidth=0.7)
+    ax.set_xlim(left=-0.005)
+    ax.set_ylim(bottom=-0.01)
     ax.set_xlabel("unsafe_compliance rate (lower = safer)")
     ax.set_ylabel("over_refusal rate (lower = more helpful)")
-    ax.set_title("Helpfulness vs safety trade-off (size ∝ sample count)")
+    ax.set_title("Helpfulness vs safety trade-off (bubble size ∝ sample count)")
+    plt.tight_layout()
     fig.savefig(out, format="png")
     plt.close(fig)
 
@@ -476,7 +570,7 @@ def main() -> None:
 
     fig_safety_radar(df, args.output_dir / "01_safety_radar.png")
     fig_label_heatmap(df, args.output_dir / "02_refusal_heatmap_model_x_suite.png")
-    fig_policy_dumbbell(df, args.output_dir / "03_policy_dumbbell_refusal.png", metric="refusal_correct")
+    fig_ssei_forest(Path("results"), args.output_dir / "03_ssei_forest.png")
     fig_unsafe_vs_overrefusal(df, args.output_dir / "04_unsafe_vs_overrefusal_scatter.png")
     fig_parser_status_bars(df, args.output_dir / "05_judge_parser_status.png")
     fig_confidence_violin(df, args.output_dir / "06_judge_confidence_violin.png")
