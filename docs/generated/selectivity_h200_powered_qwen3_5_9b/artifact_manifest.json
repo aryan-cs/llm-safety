@@ -1,0 +1,66 @@
+{
+  "analysis_git_commit": "805bf22b6d50d7217ea0fb3a07cb60776d6e0207",
+  "analysis_git_dirty": true,
+  "analysis_git_status_short": "?? .claude/\n?? _worktrees/\n?? docs/generated/",
+  "macro_prefix": "Primary",
+  "results_dir": "results/selectivity_h200_powered_qwen3_5_9b",
+  "schema_version": 1,
+  "source_artifacts": {
+    "figures/manifest.json": {
+      "bytes": 12631,
+      "path": "results/selectivity_h200_powered_qwen3_5_9b/figures/manifest.json",
+      "sha256": "8e9886d2d4e5829fb4cc893c2cea44c6767469f923dd601206dedc8feed427fc"
+    },
+    "manifest.json": {
+      "bytes": 244246,
+      "path": "results/selectivity_h200_powered_qwen3_5_9b/manifest.json",
+      "sha256": "3708d9a6ce25557ea8d1a48a51cc5bbc613cc7155613d0f306b875ee29b47387"
+    },
+    "metrics.json": {
+      "bytes": 154628,
+      "path": "results/selectivity_h200_powered_qwen3_5_9b/metrics.json",
+      "sha256": "f7557e4f49edcadb4303dbb378f934dbaf67717e6e98775a1b4e401047f59896"
+    }
+  },
+  "source_run_git_commit": "93c1241ebb2174ac7bffcb4d318c90689783a3c0",
+  "source_run_git_dirty": false,
+  "source_run_model_id": "Qwen/Qwen3-8B",
+  "source_run_name": "selectivity_h200_powered_qwen3_5_9b",
+  "tables": {
+    "causal_restoration_table.md": {
+      "bytes": 338,
+      "path": "docs/generated/selectivity_h200_powered_qwen3_5_9b/causal_restoration_table.md",
+      "sha256": "f5986e1bdc4f5c0e203cc1349cb58c21905ce7a13d4cfdc6ec599427d6cacf69"
+    },
+    "causal_restoration_table.tex": {
+      "bytes": 616,
+      "path": "docs/generated/selectivity_h200_powered_qwen3_5_9b/causal_restoration_table.tex",
+      "sha256": "d76ab300457a395a9bca7d8c709e58b7e1df601b4d134ba9b08427001b42cfcb"
+    },
+    "main_results_table.md": {
+      "bytes": 734,
+      "path": "docs/generated/selectivity_h200_powered_qwen3_5_9b/main_results_table.md",
+      "sha256": "4cde22312810a624f8070cd4ff2e26d21a016d2fd7a362567e448ca0122758b9"
+    },
+    "main_results_table.tex": {
+      "bytes": 827,
+      "path": "docs/generated/selectivity_h200_powered_qwen3_5_9b/main_results_table.tex",
+      "sha256": "c333ae4db4b7cfdfaaa7dd386a1a169fbf2e7e5f4e1a2c2041bf88db7297b471"
+    },
+    "result_macros.tex": {
+      "bytes": 454,
+      "path": "docs/generated/selectivity_h200_powered_qwen3_5_9b/result_macros.tex",
+      "sha256": "eed9a1cfa9e8bbd38ac9edf1c89011925adba3a04f1f482e08cb72c726fcba46"
+    },
+    "suite_level_effects_table.md": {
+      "bytes": 3268,
+      "path": "docs/generated/selectivity_h200_powered_qwen3_5_9b/suite_level_effects_table.md",
+      "sha256": "3e774750fb47a42905e1aa068606a8047d02d887aee32df97bbffb41d65191ff"
+    },
+    "suite_level_effects_table.tex": {
+      "bytes": 3635,
+      "path": "docs/generated/selectivity_h200_powered_qwen3_5_9b/suite_level_effects_table.tex",
+      "sha256": "0016bb688a0142524ca1b0a6f2240203b7da987eb1f9aa34d2061164693862d2"
+    }
+  }
+}

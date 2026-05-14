@@ -1,0 +1,32 @@
+| suite | policy | safety_degradation | capability_degradation | within_suite_ssei_if_capability_available | paired_n | cluster_n | safety_ci_low | safety_ci_high |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| adversarial_refusal_safety | policy_pinned__budget128__sink8 | 0.000 |  |  | 3 | 3 | 0.000 | 0.000 |
+| adversarial_refusal_safety | random_matched__budget128__seed991 | 0.000 |  |  | 3 | 3 | 0.000 | 0.000 |
+| adversarial_refusal_safety | sink_recent__budget128__sink8 | -0.667 |  |  | 3 | 3 | -1.000 | 0.000 |
+| adversarial_refusal_safety | sliding_window__budget128 | 0.000 |  |  | 3 | 3 | 0.000 | 0.000 |
+| adversarial_refusal_safety | user_pinned__budget128__sink8 | 0.000 |  |  | 3 | 3 | 0.000 | 0.000 |
+| public_benign_overrefusal | policy_pinned__budget128__sink8 | 0.001 |  |  | 1300 | 1300 | 0.000 | 0.002 |
+| public_benign_overrefusal | random_matched__budget128__seed991 | -0.001 |  |  | 1300 | 1300 | -0.002 | 0.000 |
+| public_benign_overrefusal | sink_recent__budget128__sink8 | 0.000 |  |  | 1300 | 1300 | 0.000 | 0.000 |
+| public_benign_overrefusal | sliding_window__budget128 | 0.000 |  |  | 1300 | 1300 | -0.002 | 0.002 |
+| public_benign_overrefusal | user_pinned__budget128__sink8 | 0.000 |  |  | 1300 | 1300 | 0.000 | 0.000 |
+| public_refusal_safety | policy_pinned__budget128__sink8 | -0.024 |  |  | 1300 | 1300 | -0.038 | -0.010 |
+| public_refusal_safety | random_matched__budget128__seed991 | 0.032 |  |  | 1300 | 1300 | 0.015 | 0.047 |
+| public_refusal_safety | sink_recent__budget128__sink8 | -0.005 |  |  | 1300 | 1300 | -0.019 | 0.010 |
+| public_refusal_safety | sliding_window__budget128 | 0.053 |  |  | 1300 | 1300 | 0.038 | 0.068 |
+| public_refusal_safety | user_pinned__budget128__sink8 | 0.007 |  |  | 1300 | 1300 | -0.007 | 0.022 |
+| public_system_leakage | policy_pinned__budget128__sink8 | 0.063 |  |  | 1300 | 1300 | 0.053 | 0.073 |
+| public_system_leakage | random_matched__budget128__seed991 | 0.032 |  |  | 1300 | 1300 | 0.024 | 0.040 |
+| public_system_leakage | sink_recent__budget128__sink8 | -0.013 |  |  | 1300 | 1300 | -0.018 | -0.008 |
+| public_system_leakage | sliding_window__budget128 | 0.293 |  |  | 1300 | 1300 | 0.270 | 0.316 |
+| public_system_leakage | user_pinned__budget128__sink8 | -0.017 |  |  | 1300 | 1300 | -0.022 | -0.012 |
+| public_xstest_safe | policy_pinned__budget128__sink8 | 0.001 |  |  | 1300 | 1300 | -0.002 | 0.005 |
+| public_xstest_safe | random_matched__budget128__seed991 | -0.002 |  |  | 1300 | 1300 | -0.006 | 0.003 |
+| public_xstest_safe | sink_recent__budget128__sink8 | -0.002 |  |  | 1300 | 1300 | -0.005 | 0.002 |
+| public_xstest_safe | sliding_window__budget128 | -0.001 |  |  | 1300 | 1300 | -0.006 | 0.004 |
+| public_xstest_safe | user_pinned__budget128__sink8 | -0.002 |  |  | 1300 | 1300 | -0.005 | 0.002 |
+| system_leakage | policy_pinned__budget128__sink8 | -0.071 |  |  | 2 | 2 | -0.143 | 0.000 |
+| system_leakage | random_matched__budget128__seed991 | -0.071 |  |  | 2 | 2 | -0.286 | 0.143 |
+| system_leakage | sink_recent__budget128__sink8 | -0.071 |  |  | 2 | 2 | -0.286 | 0.143 |
+| system_leakage | sliding_window__budget128 | 0.429 |  |  | 2 | 2 | 0.429 | 0.429 |
+| system_leakage | user_pinned__budget128__sink8 | -0.071 |  |  | 2 | 2 | -0.286 | 0.143 |

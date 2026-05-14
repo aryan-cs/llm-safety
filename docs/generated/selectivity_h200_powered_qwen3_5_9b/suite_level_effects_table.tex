@@ -1,0 +1,43 @@
+\begin{table}[t]
+\centering
+\small
+\setlength{\tabcolsep}{3pt}
+\begin{tabularx}{\linewidth}{@{}lXXXXXXXX@{}}
+\toprule
+suite & policy & safety degradation & capability degradation & within suite ssei if capability available & paired n & cluster n & safety ci low & safety ci high \\
+\midrule
+adversarial\_refusal\_safety & policy\_pinned\_\_budget128\_\_sink8 & 0.000 &  &  & 3 & 3 & 0.000 & 0.000 \\
+adversarial\_refusal\_safety & random\_matched\_\_budget128\_\_seed991 & 0.000 &  &  & 3 & 3 & 0.000 & 0.000 \\
+adversarial\_refusal\_safety & sink\_recent\_\_budget128\_\_sink8 & -0.667 &  &  & 3 & 3 & -1.000 & 0.000 \\
+adversarial\_refusal\_safety & sliding\_window\_\_budget128 & 0.000 &  &  & 3 & 3 & 0.000 & 0.000 \\
+adversarial\_refusal\_safety & user\_pinned\_\_budget128\_\_sink8 & 0.000 &  &  & 3 & 3 & 0.000 & 0.000 \\
+public\_benign\_overrefusal & policy\_pinned\_\_budget128\_\_sink8 & 0.001 &  &  & 1300 & 1300 & 0.000 & 0.002 \\
+public\_benign\_overrefusal & random\_matched\_\_budget128\_\_seed991 & -0.001 &  &  & 1300 & 1300 & -0.002 & 0.000 \\
+public\_benign\_overrefusal & sink\_recent\_\_budget128\_\_sink8 & 0.000 &  &  & 1300 & 1300 & 0.000 & 0.000 \\
+public\_benign\_overrefusal & sliding\_window\_\_budget128 & 0.000 &  &  & 1300 & 1300 & -0.002 & 0.002 \\
+public\_benign\_overrefusal & user\_pinned\_\_budget128\_\_sink8 & 0.000 &  &  & 1300 & 1300 & 0.000 & 0.000 \\
+public\_refusal\_safety & policy\_pinned\_\_budget128\_\_sink8 & -0.024 &  &  & 1300 & 1300 & -0.038 & -0.010 \\
+public\_refusal\_safety & random\_matched\_\_budget128\_\_seed991 & 0.032 &  &  & 1300 & 1300 & 0.015 & 0.047 \\
+public\_refusal\_safety & sink\_recent\_\_budget128\_\_sink8 & -0.005 &  &  & 1300 & 1300 & -0.019 & 0.010 \\
+public\_refusal\_safety & sliding\_window\_\_budget128 & 0.053 &  &  & 1300 & 1300 & 0.038 & 0.068 \\
+public\_refusal\_safety & user\_pinned\_\_budget128\_\_sink8 & 0.007 &  &  & 1300 & 1300 & -0.007 & 0.022 \\
+public\_system\_leakage & policy\_pinned\_\_budget128\_\_sink8 & 0.063 &  &  & 1300 & 1300 & 0.053 & 0.073 \\
+public\_system\_leakage & random\_matched\_\_budget128\_\_seed991 & 0.032 &  &  & 1300 & 1300 & 0.024 & 0.040 \\
+public\_system\_leakage & sink\_recent\_\_budget128\_\_sink8 & -0.013 &  &  & 1300 & 1300 & -0.018 & -0.008 \\
+public\_system\_leakage & sliding\_window\_\_budget128 & 0.293 &  &  & 1300 & 1300 & 0.270 & 0.316 \\
+public\_system\_leakage & user\_pinned\_\_budget128\_\_sink8 & -0.017 &  &  & 1300 & 1300 & -0.022 & -0.012 \\
+public\_xstest\_safe & policy\_pinned\_\_budget128\_\_sink8 & 0.001 &  &  & 1300 & 1300 & -0.002 & 0.005 \\
+public\_xstest\_safe & random\_matched\_\_budget128\_\_seed991 & -0.002 &  &  & 1300 & 1300 & -0.006 & 0.003 \\
+public\_xstest\_safe & sink\_recent\_\_budget128\_\_sink8 & -0.002 &  &  & 1300 & 1300 & -0.005 & 0.002 \\
+public\_xstest\_safe & sliding\_window\_\_budget128 & -0.001 &  &  & 1300 & 1300 & -0.006 & 0.004 \\
+public\_xstest\_safe & user\_pinned\_\_budget128\_\_sink8 & -0.002 &  &  & 1300 & 1300 & -0.005 & 0.002 \\
+system\_leakage & policy\_pinned\_\_budget128\_\_sink8 & -0.071 &  &  & 2 & 2 & -0.143 & 0.000 \\
+system\_leakage & random\_matched\_\_budget128\_\_seed991 & -0.071 &  &  & 2 & 2 & -0.286 & 0.143 \\
+system\_leakage & sink\_recent\_\_budget128\_\_sink8 & -0.071 &  &  & 2 & 2 & -0.286 & 0.143 \\
+system\_leakage & sliding\_window\_\_budget128 & 0.429 &  &  & 2 & 2 & 0.429 & 0.429 \\
+system\_leakage & user\_pinned\_\_budget128\_\_sink8 & -0.071 &  &  & 2 & 2 & -0.286 & 0.143 \\
+\bottomrule
+\end{tabularx}
+\caption{Suite-level degradation effects with paired prompt counts.}
+\label{tab:suite-effects}
+\end{table}
