@@ -1,8 +1,0 @@
-provider: hf
-model_id: Qwen/Qwen2.5-32B-Instruct
-revision: 5ede1c97bbab6ce5cda5812749b4c0bdf79b18dd
-dtype: bfloat16
-device_map: auto
-trust_remote_code: false
-low_cpu_mem_usage: true
-local_files_only: false

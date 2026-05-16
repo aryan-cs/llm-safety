@@ -1,8 +1,0 @@
-provider: hf
-model_id: Qwen/Qwen2.5-14B-Instruct
-revision: cf98f3b3bbb457ad9e2bb7baf9a0125b6b88caa8
-dtype: bfloat16
-device_map: auto
-trust_remote_code: false
-low_cpu_mem_usage: true
-local_files_only: false
