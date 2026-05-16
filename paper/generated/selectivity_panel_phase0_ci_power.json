@@ -1,9 +1,0 @@
-{
-  "conservative_bernoulli_required_cluster_n": 601,
-  "conservative_ssei_two_component_required_cluster_n": 1201,
-  "max_paired_delta_required_cluster_n": 2401,
-  "note": "The Bernoulli count assumes the maximum single binary-outcome standard deviation of 0.5. The SSEI count assumes independent safety and capability Bernoulli components and is the minimum confirmatory powered-run planning target. The max paired-delta count is a worst-case bound for paired deltas that may be overly conservative for deterministic LLM prompt clusters. Pilot estimates use prompt-cluster deltas from generations.jsonl and should be treated as planning guidance, not final inference.",
-  "pilot_estimates": [],
-  "schema_version": 1,
-  "target_ci_width": 0.08
-}

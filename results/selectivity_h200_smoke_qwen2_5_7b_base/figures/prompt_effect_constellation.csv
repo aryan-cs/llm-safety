@@ -1,2 +1,0 @@
-capability_score_delta,effect_magnitude,generated_word_count_delta,leakage_avoidance_score_delta,policy,prompt_id,refusal_expected_accuracy_delta,safety_score_delta,seed,suite,x,y
-0.0,1.0,-0.1111111111111111,,sink_recent__budget128__sink8,capability_smoke_002,,,0,capability_smoke,0.0,0.0

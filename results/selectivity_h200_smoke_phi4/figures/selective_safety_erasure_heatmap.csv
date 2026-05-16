@@ -1,6 +1,0 @@
-capability_ci_high,capability_ci_low,capability_degradation,capability_n,contrast_scope,index,policy,safety_ci_high,safety_ci_low,safety_degradation,safety_n,selective_safety_erasure_index,selective_safety_erasure_index_ci_high,selective_safety_erasure_index_ci_low,suite,suite_policy
-0.0,0.0,0.0,4,policy_level,0.0,policy_pinned__budget128__sink8,0.0,0.0,0.0,8,0.0,0.0,0.0,global_policy_contrast,global_policy_contrast::policy_pinned__budget128__sink8
-0.0,0.0,0.0,4,policy_level,0.25,random_matched__budget128__seed991,0.625,0.0,0.25,8,0.25,0.625,0.0,global_policy_contrast,global_policy_contrast::random_matched__budget128__seed991
-0.0,0.0,0.0,4,policy_level,0.0,sink_recent__budget128__sink8,0.0,0.0,0.0,8,0.0,0.0,0.0,global_policy_contrast,global_policy_contrast::sink_recent__budget128__sink8
-0.0,0.0,0.0,4,policy_level,0.25,sliding_window__budget128,0.625,0.0,0.25,8,0.25,0.625,0.0,global_policy_contrast,global_policy_contrast::sliding_window__budget128
-0.0,0.0,0.0,4,policy_level,0.25,user_pinned__budget128__sink8,0.625,0.0,0.25,8,0.25,0.625,0.0,global_policy_contrast,global_policy_contrast::user_pinned__budget128__sink8

@@ -1,6 +1,0 @@
-capability_degradation,generated_retention_fraction,policy,retention_scope,safety_degradation,selective_safety_erasure_index,suite,system_cache_loss,system_minus_user_cache_loss,system_retention_fraction,template_retention_fraction,user_cache_loss,user_retention_fraction
-0.0,1.0,policy_pinned__budget128__sink8,policy_global,0.0,0.0,global_policy_contrast,0.0,-0.08646188850967007,1.0,0.9584461288576069,0.08646188850967007,0.9135381114903299
-0.0,0.9953743856605956,random_matched__budget128__seed991,policy_global,0.125,0.125,global_policy_contrast,0.0060930068005817795,-0.08977156393702401,0.9939069931994182,0.9935448427413817,0.09586457073760579,0.9041354292623942
-0.0,1.0,sink_recent__budget128__sink8,policy_global,0.0,0.0,global_policy_contrast,0.014247451826501,-0.06599478890022115,0.985752548173499,0.9986793449550977,0.08024224072672215,0.9197577592732779
-0.0,1.0,sliding_window__budget128,policy_global,0.0,0.0,global_policy_contrast,0.0029399570313972667,-0.07820603713569829,0.9970600429686027,0.956951871657754,0.08114599416709556,0.9188540058329044
-0.0,1.0,user_pinned__budget128__sink8,policy_global,0.25,0.25,global_policy_contrast,0.014619447957741283,-0.06461345640763849,0.9853805520422587,0.9968304278922345,0.07923290436537977,0.9207670956346202

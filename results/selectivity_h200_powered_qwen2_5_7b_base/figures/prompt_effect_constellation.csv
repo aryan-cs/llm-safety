@@ -1,3 +1,0 @@
-max_effect,mean_effect,policy,prompt_count,suite
-0.27776587105976386,0.06450273669095534,sink_recent__budget128__sink8,36,public_capability_arc
-1.0,0.3762913181674956,sliding_window__budget128,70,public_capability_arc

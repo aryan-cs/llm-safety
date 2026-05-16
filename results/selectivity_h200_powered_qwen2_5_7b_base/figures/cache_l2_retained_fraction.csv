@@ -1,7 +1,0 @@
-decode_step,l2_retained_fraction,policy
-0,1.0,none
-1,1.0,none
-0,0.9969979903835166,sink_recent__budget128__sink8
-1,0.9997618863115371,sink_recent__budget128__sink8
-0,0.9970066858429618,sliding_window__budget128
-1,0.9997625312695128,sliding_window__budget128

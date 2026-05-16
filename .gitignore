@@ -9,37 +9,35 @@ __pycache__/
 .vscode/
 .locks/
 logs/
+tmp/
 
-# Local H200 interruption snapshots. Keep raw experiment artifacts out of git.
-snapshots/h200/
-
-# Local model and dataset caches
+# Local snapshots and caches
+snapshots/
 .cache/
 hf_cache/
 /models/
 
-# Large generated artifacts
+# Data (keep gitkeeps)
 data/external/*
-data/processed/*.jsonl
-data/processed/*.manifest.json
-results/*
+data/processed/*
 !data/external/.gitkeep
 !data/processed/.gitkeep
+
+# Results (force-add powered runs only)
+results/*
 !results/README.md
 
-# Paper/docs build outputs
-docs/build/
-docs/generated/
-docs/audit/*.csv
-docs/audit/*.jsonl
-docs/audit/*_audit_export_manifest.json
-docs/audit/*_summary/
+# LaTeX build artifacts
 *.aux
 *.bbl
 *.blg
 *.log
 *.out
+
+# PDFs (only track the final paper)
 *.pdf
-*.pdf.manifest.json
 !docs/kv-cache-safety.pdf
-!docs/kv-cache-safety.pdf.manifest.json
+
+# Generated paper assets (force-add active_* and claim_assessment only)
+docs/generated/
+docs/build/

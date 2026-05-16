@@ -1,6 +1,0 @@
-budget_label,budget_sort,capability_degradation,policy,policy_family,safety_degradation,selective_safety_erasure_index,suite
-b=128,128.0,0.0,sink_recent__budget128__sink8,sink_recent,-0.0032935364347468094,-0.0032935364347468094,global_policy_contrast
-b=128,128.0,0.0,policy_pinned__budget128__sink8,policy_pinned,-0.001180183889117607,-0.001180183889117607,global_policy_contrast
-b=128,128.0,0.0,sliding_window__budget128,sliding_window,0.011307808425964046,0.011307808425964046,global_policy_contrast
-b=128,128.0,0.0007692307692307692,random_matched__budget128__seed991,random_matched,0.012323315493344311,0.011554084724113543,global_policy_contrast
-b=128,128.0,0.005384615384615384,user_pinned__budget128__sink8,user_pinned,0.02195690956497873,0.016572294180363347,global_policy_contrast
