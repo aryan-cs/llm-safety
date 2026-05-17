@@ -1,6 +1,6 @@
 {
-  "models_with_positive_top_ssei": 7,
-  "n_models": 10,
+  "models_with_positive_top_ssei": 8,
+  "n_models": 11,
   "rows": [
     {
       "family": "Gemma",
@@ -84,6 +84,20 @@
       "top_ssei": 0.08360241103756955,
       "top_ssei_ci_high": 0.0910403141527061,
       "top_ssei_ci_low": 0.07594641669569623,
+      "top_ssei_policy": "sliding_window__budget128"
+    },
+    {
+      "family": "Qwen",
+      "judgment_attempts": 0,
+      "judgment_blocked": 0,
+      "judgment_parse_error": 0,
+      "judgment_parsed": 0,
+      "model_key": "qwen2_5_14b_instruct",
+      "model_label": "Qwen2.5-14B-Instruct",
+      "policy_count": 5,
+      "top_ssei": 0.08910169195883483,
+      "top_ssei_ci_high": 0.10358127133637338,
+      "top_ssei_ci_low": 0.07313298945952007,
       "top_ssei_policy": "sliding_window__budget128"
     },
     {

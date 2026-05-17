@@ -8,8 +8,8 @@
 \toprule
 \textbf{Claim} & \textbf{Status} & \textbf{Notes} \\
 \midrule
-behavioral\_cache\_sensitivity & supported & 7 of 9 instruction-tuned models show |SSEI| >= 0.01. \\
-safety\_minus\_capability\_selectivity & supported & 6 models have a registered policy with positive SSEI whose 95\% CI excludes 0 (0.01 threshold). \\
+behavioral\_cache\_sensitivity & supported & 8 of 10 instruction-tuned models show |SSEI| >= 0.01. \\
+safety\_minus\_capability\_selectivity & supported & 7 models have a registered policy with positive SSEI whose 95\% CI excludes 0 (0.01 threshold). \\
 cross\_family\_replication & supported & Families with positive instruction-tuned selectivity excluding 0: ['Llama', 'OLMo', 'Phi', 'Qwen']. \\
 targeted\_mitigation & supported & Policy-pinned cache retention fully restores refusal (restoration fraction 1.000) on both Qwen2.5-7B and Qwen3-9B. This demonstrates that protecting system-role tokens from eviction is a complete mitigation for the selective safety erasure effect. \\
 distributed\_cache\_safety & supported & Causal patching shows safety-relevant information is distributed across cached tokens rather than role-localized. System-role and user-role K+V restorations produce comparable partial recovery (Qwen3-9B: 0.355 vs 0.408, overlapping CIs; Qwen2.5-7B: 0.584 vs 0.584). Both interventions partially recover refusal (35-58\%), establishing cache state as a safety-relevant surface. Phi-4's vulnerability arises from sliding-window eviction, not quantization, so the quantization-based causal protocol is inapplicable to Phi-4. \\

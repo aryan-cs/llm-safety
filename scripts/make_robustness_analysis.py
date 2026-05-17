@@ -28,6 +28,8 @@ SSEI_POSITIVE_THRESHOLD = 0.01
 MODEL_FAMILIES = {
     "qwen2_5_7b_base": "Qwen",
     "qwen2_5_7b_instruct": "Qwen",
+    "qwen2_5_14b_instruct": "Qwen",
+    "qwen2_5_14b_msm_rules": "Qwen",
     "qwen3_5_9b": "Qwen",
     "gpt_oss_20b": "OpenAI",
     "llama3_1_8b_instruct": "Llama",
@@ -39,6 +41,8 @@ MODEL_FAMILIES = {
 MODEL_LABELS = {
     "qwen2_5_7b_base": "Qwen2.5-7B base",
     "qwen2_5_7b_instruct": "Qwen2.5-7B-Instruct",
+    "qwen2_5_14b_instruct": "Qwen2.5-14B-Instruct",
+    "qwen2_5_14b_msm_rules": "Qwen2.5-14B-Instruct + MSM",
     "qwen3_5_9b": "Qwen3-9B",
     "gpt_oss_20b": "GPT-OSS-20B",
     "llama3_1_8b_instruct": "Llama-3.1-8B-Instruct",
