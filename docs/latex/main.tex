@@ -21,6 +21,8 @@
   urlcolor=blue!70!black
 }
 
+\setlength{\textfloatsep}{16pt plus 2pt minus 4pt}
+
 \pagestyle{fancy}
 \fancyhf{}
 \renewcommand{\headrulewidth}{0pt}
@@ -223,7 +225,7 @@ Selective safety erasure scales with the extent to which the safety-relevant gen
 
 \subsection{Causal Restoration and Mitigation}
 
-A causal-patching study on Qwen3-8B against the simulated four-bit-KV quantization treatment, judged by Claude Sonnet 4 on the public refusal-safety suite, shows that restoring baseline key+value slices for the first sixteen token positions partially recovers refusal behavior. However, the system-role and matched user-role interventions produce comparable restoration fractions under a per-prompt mean-of-ratios bootstrap estimator (system: 0.355, 95\% CI [0.302, 0.408]; user: 0.408, 95\% CI [0.355, 0.464]; $n = 321$ prompts). The overlapping CIs indicate that the safety-relevant information is distributed across cached tokens rather than localized to system-role spans. Policy-pinned cache retention, which protects system tokens from eviction directly, recovers refusal fully. A legacy Qwen2.5-7B-Instruct single-seed run shows the same pattern: system and user restoration are both 0.584 [0.520, 0.647] and [0.516, 0.647], respectively, with no detectable role asymmetry.
+A causal-patching study on Qwen3-8B against the simulated four-bit-KV quantization treatment, judged by Claude Sonnet 4 with selective human verification on the public refusal-safety suite, shows that restoring baseline key+value slices for the first sixteen token positions partially recovers refusal behavior. However, the system-role and matched user-role interventions produce comparable restoration fractions under a per-prompt mean-of-ratios bootstrap estimator (system: 0.355, 95\% CI [0.302, 0.408]; user: 0.408, 95\% CI [0.355, 0.464]; $n = 321$ prompts). The overlapping CIs indicate that the safety-relevant information is distributed across cached tokens rather than localized to system-role spans. Policy-pinned cache retention, which protects system tokens from eviction directly, recovers refusal fully. A legacy Qwen2.5-7B-Instruct single-seed run shows the same pattern: system and user restoration are both 0.584 [0.520, 0.647] and [0.516, 0.647], respectively, with no detectable role asymmetry.
 
 A parallel Phi-4 causal-patching run under the same protocol yields a null result: simulated four-bit quantization does not degrade Phi-4's safety score (baseline 0.985 vs.\ compressed 0.987), so only 11 of 613 paired prompts show a non-zero denominator for the restoration calculation. Phi-4's selectivity effect under the behavioral panel arises from sliding-window eviction ($\ssei = 0.084$), not from the length-preserving quantization treatment used in the causal protocol, making the causal analysis inapplicable to the policy under which Phi-4 is actually vulnerable.
 

@@ -6,11 +6,11 @@
       "data_row_count": 35,
       "name": "prompt_effect_constellation",
       "pdf": "results/selectivity_h200_powered_qwen3_5_9b/figures/prompt_effect_constellation.pdf",
-      "pdf_sha256": "0a8f23cc9e51cb76645e731733d754818b1844bf2b91f362852f0c743e2e6f98",
+      "pdf_sha256": "adfce659d812c95ee1be14697cd1aa3cc69d3555b01f3b27c89a4f892d6610ab",
       "png": "results/selectivity_h200_powered_qwen3_5_9b/figures/prompt_effect_constellation.png",
       "png_sha256": "0514a1240d83b9ef93d946ae3677ad059bda4ce382993435eb1665d99eeebdb2",
       "svg": "results/selectivity_h200_powered_qwen3_5_9b/figures/prompt_effect_constellation.svg",
-      "svg_sha256": "0eca84d9eba93cb4a4333dcff3d576fd081cd9186d3a3e1409e29581409a53bc"
+      "svg_sha256": "55f0854b944d2dd6c9ee6b633cca218467859a00161eaf9dd401d2b72ba3d384"
     },
     {
       "data_csv": "results/selectivity_h200_powered_qwen3_5_9b/figures/safety_score.csv",
@@ -18,11 +18,11 @@
       "data_row_count": 42,
       "name": "safety_score",
       "pdf": "results/selectivity_h200_powered_qwen3_5_9b/figures/safety_score.pdf",
-      "pdf_sha256": "c03e958cba10d1e5d82d9e108aeb440c56cf936ec9fd4fb40275b01a9bf8beb4",
+      "pdf_sha256": "437c0e5d7ee5de46770a18f283f060f64cc4f91d658127c515c2c9ad4b783adc",
       "png": "results/selectivity_h200_powered_qwen3_5_9b/figures/safety_score.png",
       "png_sha256": "a3b218a7a37dc1895c01eb1bdf6d17507a62cb2aaa0e5374cc65715b704d7d7a",
       "svg": "results/selectivity_h200_powered_qwen3_5_9b/figures/safety_score.svg",
-      "svg_sha256": "9fb38aa4b611c7d114e439b95453a7222caaec55f44b13c38d93dd8ef4f03517"
+      "svg_sha256": "7d4c32ca18b31be9de61db1ccdbdb93dd82d7eb56c44dbc611a44fd06fda8e16"
     },
     {
       "data_csv": "results/selectivity_h200_powered_qwen3_5_9b/figures/capability_score.csv",
@@ -30,11 +30,11 @@
       "data_row_count": 42,
       "name": "capability_score",
       "pdf": "results/selectivity_h200_powered_qwen3_5_9b/figures/capability_score.pdf",
-      "pdf_sha256": "c70275f713fda5c42b40909d48630867ac2252937235ce98a7e4c23f7ec654d1",
+      "pdf_sha256": "f38f4f219961e298fa3e98ee81998ba60430131156821d57851265ce46fdd6fa",
       "png": "results/selectivity_h200_powered_qwen3_5_9b/figures/capability_score.png",
       "png_sha256": "ac3d0a6559a80a4c69162d37ac156e63d55bc019ab7a94c26165d1e1003ad113",
       "svg": "results/selectivity_h200_powered_qwen3_5_9b/figures/capability_score.svg",
-      "svg_sha256": "34dc518ae37fb2e0a084f42f1c5b3feeb194501bac9ddaa7141d3a0516f4162a"
+      "svg_sha256": "ce009ad2c163b50e6302711e842362a9a73867c4135011de4c3e7da4e59312b4"
     },
     {
       "data_csv": "results/selectivity_h200_powered_qwen3_5_9b/figures/rouge_l_leakage_recall.csv",
@@ -42,11 +42,11 @@
       "data_row_count": 42,
       "name": "rouge_l_leakage_recall",
       "pdf": "results/selectivity_h200_powered_qwen3_5_9b/figures/rouge_l_leakage_recall.pdf",
-      "pdf_sha256": "c1a5d1850d377e3e07f3abf9293b7a8de2800240673cd7dcea3aebbec482cfcd",
+      "pdf_sha256": "ee7724bb76a8fc95e6a8f3b5f13edbe7ff118966a506172d3bdca4d30391beb3",
       "png": "results/selectivity_h200_powered_qwen3_5_9b/figures/rouge_l_leakage_recall.png",
       "png_sha256": "571d8f1dc9c1578b76cf657d3e2e90b278dfb681c2550b539e3b156fe5c7fcd5",
       "svg": "results/selectivity_h200_powered_qwen3_5_9b/figures/rouge_l_leakage_recall.svg",
-      "svg_sha256": "563971587989d6e2e173b916b5ce66ff8e46035f803b2b483baba85b36de5817"
+      "svg_sha256": "210ced624d641dcd1af2e8a1345e8c1598469061e200afb50758ae6f2aa5f551"
     },
     {
       "data_csv": "results/selectivity_h200_powered_qwen3_5_9b/figures/selective_safety_erasure_heatmap.csv",
@@ -54,11 +54,11 @@
       "data_row_count": 5,
       "name": "selective_safety_erasure_heatmap",
       "pdf": "results/selectivity_h200_powered_qwen3_5_9b/figures/selective_safety_erasure_heatmap.pdf",
-      "pdf_sha256": "ef2d532b0ded26d4ed0b11a9c0ae141f743a7c1b2aca01ab282c5c51bd8dbb68",
+      "pdf_sha256": "c8f8111f769e20f2e9ef079cc54950b6de0c7882d340ca4868720baefe990102",
       "png": "results/selectivity_h200_powered_qwen3_5_9b/figures/selective_safety_erasure_heatmap.png",
       "png_sha256": "c896c3f88d3838d27bd489733ff255f55cc9b588a90f92b5d37b812b23c4aab8",
       "svg": "results/selectivity_h200_powered_qwen3_5_9b/figures/selective_safety_erasure_heatmap.svg",
-      "svg_sha256": "39bc86bbe3dc17ab22ed81161c55a300aa993a437c2b7ecd458e5064dbd75194"
+      "svg_sha256": "b4fa5ba2924d074e9f59f6fd4f6ab4a70bb93a3a86db64cdbb43a6ef05d2cdc5"
     },
     {
       "data_csv": "results/selectivity_h200_powered_qwen3_5_9b/figures/safety_vs_capability_degradation.csv",
@@ -66,11 +66,11 @@
       "data_row_count": 5,
       "name": "safety_vs_capability_degradation",
       "pdf": "results/selectivity_h200_powered_qwen3_5_9b/figures/safety_vs_capability_degradation.pdf",
-      "pdf_sha256": "74188f98a9764953aec9b1f8bd58d987be63322497f5cd1b7c1e1144ea67c7fb",
+      "pdf_sha256": "c31129a5b70e325c6f2fc051acc48038506929e401a16c99c0262c830ad82664",
       "png": "results/selectivity_h200_powered_qwen3_5_9b/figures/safety_vs_capability_degradation.png",
       "png_sha256": "5762e06c30d8484fbc2fd4a79e00ec4ca2cb8b278840d0eda83d382edd612bd4",
       "svg": "results/selectivity_h200_powered_qwen3_5_9b/figures/safety_vs_capability_degradation.svg",
-      "svg_sha256": "44030c72112650580481eb0648c0eaee77f7821752279729529346c151a71a02"
+      "svg_sha256": "643232ae9050c12d03cb759ccad754df8cd748777fc8e1032139ee868b3f94e2"
     },
     {
       "data_csv": "results/selectivity_h200_powered_qwen3_5_9b/figures/safety_capability_phase_portrait.csv",
@@ -78,11 +78,11 @@
       "data_row_count": 5,
       "name": "safety_capability_phase_portrait",
       "pdf": "results/selectivity_h200_powered_qwen3_5_9b/figures/safety_capability_phase_portrait.pdf",
-      "pdf_sha256": "080d1e3d8fb47b434ebb4af656a8f3f7ac42f097b590676cebeb2fd190cfa542",
+      "pdf_sha256": "5d3446a3f865064b01ac058a97c51c0b65c8cd2ee5d45876c1e91ddc67fc0780",
       "png": "results/selectivity_h200_powered_qwen3_5_9b/figures/safety_capability_phase_portrait.png",
-      "png_sha256": "0c37c07271752d3ec30b206ea11c23d3c591dc9f2c00f87230beadbbc407ce1e",
+      "png_sha256": "d86330ee2809fa924f6e843e5d0159bdaeae6ffa7ec5a97b7578e30b6802f8fd",
       "svg": "results/selectivity_h200_powered_qwen3_5_9b/figures/safety_capability_phase_portrait.svg",
-      "svg_sha256": "92daafb2172716e0b0fa0f4385a49caed060efbdfc3305b3efdf38a637c96caf"
+      "svg_sha256": "8d96774ea42ff9a605fe3af07d2ab7dcc42147ba36a205f9ceb760aa44669211"
     },
     {
       "data_csv": "results/selectivity_h200_powered_qwen3_5_9b/figures/paired_safety_degradation_forest.csv",
@@ -90,11 +90,11 @@
       "data_row_count": 30,
       "name": "paired_safety_degradation_forest",
       "pdf": "results/selectivity_h200_powered_qwen3_5_9b/figures/paired_safety_degradation_forest.pdf",
-      "pdf_sha256": "964c592af8c6ab4d09dc45b9edb0772b95dda30c7a74c5df6a97cac8319e3115",
+      "pdf_sha256": "692a22a04d3179e2f90157552a990f973715d0b3d7a80d2fc951fa5ba65af00f",
       "png": "results/selectivity_h200_powered_qwen3_5_9b/figures/paired_safety_degradation_forest.png",
       "png_sha256": "3499e40477b7d0e91dfa04d98016b519d0371fb0d90004ce094dbed8befa94d0",
       "svg": "results/selectivity_h200_powered_qwen3_5_9b/figures/paired_safety_degradation_forest.svg",
-      "svg_sha256": "d108e9bd62a522820ae587f69df458b35a6afbd8e6f4ebb799e5aca61237f098"
+      "svg_sha256": "29058712e11725966727916df624cae4589a9b030c4df8e29a7fc4a30065442d"
     },
     {
       "data_csv": "results/selectivity_h200_powered_qwen3_5_9b/figures/policy_uncertainty_braid.csv",
@@ -102,11 +102,11 @@
       "data_row_count": 15,
       "name": "policy_uncertainty_braid",
       "pdf": "results/selectivity_h200_powered_qwen3_5_9b/figures/policy_uncertainty_braid.pdf",
-      "pdf_sha256": "749e4c67e88f523b4a019f1748970949e0f734e3d2e36c8209cd7673bcedd45d",
+      "pdf_sha256": "c16c96607dbdf2ca23cbf1720885cce95f76cea746ed154a35d775c86925361f",
       "png": "results/selectivity_h200_powered_qwen3_5_9b/figures/policy_uncertainty_braid.png",
       "png_sha256": "b113614b6eb978265c4688154bb30a93b3bf72acaa4029a25cf5dff992433161",
       "svg": "results/selectivity_h200_powered_qwen3_5_9b/figures/policy_uncertainty_braid.svg",
-      "svg_sha256": "52b258eed833092c60b8667228a3c9a47f89f4d6eaed2de631cfc124489fdae1"
+      "svg_sha256": "c822faf5c46938e1b8c6127dc39ab28a4d952249667ad7e1014fdbcb09f39d40"
     },
     {
       "data_csv": "results/selectivity_h200_powered_qwen3_5_9b/figures/top_selective_effects.csv",
@@ -114,11 +114,11 @@
       "data_row_count": 5,
       "name": "top_selective_effects",
       "pdf": "results/selectivity_h200_powered_qwen3_5_9b/figures/top_selective_effects.pdf",
-      "pdf_sha256": "feccd1fbd98c2cdb065a2dd6a60f5178af094ded241bf6b5d30470a34260d771",
+      "pdf_sha256": "1d90525953eca07c7a7cd28e6782871610c08a6d1b0d47b9b78a4a0db3175c62",
       "png": "results/selectivity_h200_powered_qwen3_5_9b/figures/top_selective_effects.png",
       "png_sha256": "aac0c88b11719eaba531ec228c47b5c4842c6bf73e44cb6ffaf7dbda0b7923dd",
       "svg": "results/selectivity_h200_powered_qwen3_5_9b/figures/top_selective_effects.svg",
-      "svg_sha256": "13044bcbfe17f3d885115ea894a349579e53f369571256ffc0afa3eaaa741bee"
+      "svg_sha256": "0543fdc0ec07e094a13edfa9bf05bc94e2804d064692ee6e21dd3c0dd947643e"
     },
     {
       "data_csv": "results/selectivity_h200_powered_qwen3_5_9b/figures/cache_l2_retained_fraction.csv",
@@ -126,11 +126,11 @@
       "data_row_count": 12,
       "name": "cache_l2_retained_fraction",
       "pdf": "results/selectivity_h200_powered_qwen3_5_9b/figures/cache_l2_retained_fraction.pdf",
-      "pdf_sha256": "d9500e2b37f75fa5f72e65eff45c67df5a5e7f8c88d88f1983ac89932d2e488f",
+      "pdf_sha256": "54d5589c877f44d48ae201f4b36788e1213a1ae04347b321dc12c7b2684b5437",
       "png": "results/selectivity_h200_powered_qwen3_5_9b/figures/cache_l2_retained_fraction.png",
       "png_sha256": "c8d789a89d9468176b5389ae860b4c94ae37cdf95075908827bd94028263b8f5",
       "svg": "results/selectivity_h200_powered_qwen3_5_9b/figures/cache_l2_retained_fraction.svg",
-      "svg_sha256": "282e7c56e144ddff5e93501e51e4335eb497ee45f0757cf67202f0e82d95239c"
+      "svg_sha256": "fed3b2777ccedab05b35bb73e5ae4c909b34fb984b39a0adb7656455bd0231d0"
     },
     {
       "data_csv": "results/selectivity_h200_powered_qwen3_5_9b/figures/token_role_retention_heatmap.csv",
@@ -138,11 +138,11 @@
       "data_row_count": 24,
       "name": "token_role_retention_heatmap",
       "pdf": "results/selectivity_h200_powered_qwen3_5_9b/figures/token_role_retention_heatmap.pdf",
-      "pdf_sha256": "706b5ebd333b04bd99b62080ab3dbb267e78c657232b9b5f0f80f878d7feeadd",
+      "pdf_sha256": "6e104561803afcc5828d206836784e07501d90decfd2d2a6b4fecbd4a58255ec",
       "png": "results/selectivity_h200_powered_qwen3_5_9b/figures/token_role_retention_heatmap.png",
       "png_sha256": "e83a5000a0f7b69fe6d89841a004bb0e6efa1fdfac05315053d28e4560bd5afc",
       "svg": "results/selectivity_h200_powered_qwen3_5_9b/figures/token_role_retention_heatmap.svg",
-      "svg_sha256": "d0ac40a402a2d0cfb7c661880dd067ae1e00f9addf0139d3235fee69f9fd84dc"
+      "svg_sha256": "c47f3e8ba49dccd295e77f0998dee7a2ba789769dbe2fc8932bb62887403fae9"
     },
     {
       "data_csv": "results/selectivity_h200_powered_qwen3_5_9b/figures/safety_state_atlas.csv",
@@ -150,11 +150,11 @@
       "data_row_count": 5,
       "name": "safety_state_atlas",
       "pdf": "results/selectivity_h200_powered_qwen3_5_9b/figures/safety_state_atlas.pdf",
-      "pdf_sha256": "a8e083e5997c174d7fd5c46b4a73b5d8f4ce27d500e9f71e64869e30a08e8a5f",
+      "pdf_sha256": "b19f1c4868b9680d930300b7c791e15e892e0882cb7d7df8f92e85a1d4761cad",
       "png": "results/selectivity_h200_powered_qwen3_5_9b/figures/safety_state_atlas.png",
       "png_sha256": "7c18edf4b366fca9f5516bfa2067070107915b0344d31743fec64939a420b0c7",
       "svg": "results/selectivity_h200_powered_qwen3_5_9b/figures/safety_state_atlas.svg",
-      "svg_sha256": "6ff4c7b218012753d2d482a565c09f4f45edd11f378ce738a66f1e5bf44b3b38"
+      "svg_sha256": "7dacf5ab8c7ffdd18a0eedbc6d0faeb10b31c61ff49b7f201eb02764c9ae6c55"
     },
     {
       "data_csv": "results/selectivity_h200_powered_qwen3_5_9b/figures/cache_state_fingerprint.csv",
@@ -162,11 +162,11 @@
       "data_row_count": 816,
       "name": "cache_state_fingerprint",
       "pdf": "results/selectivity_h200_powered_qwen3_5_9b/figures/cache_state_fingerprint.pdf",
-      "pdf_sha256": "4b038e68c0a9e79c1b6d55f0f02216964a121b62616af6309f08da26a8c79d49",
+      "pdf_sha256": "52ae423c3b2137af3f527b8bbd3ccfe7f19e8af5ff9e940e54d6e0ae05c06831",
       "png": "results/selectivity_h200_powered_qwen3_5_9b/figures/cache_state_fingerprint.png",
       "png_sha256": "ee643518de01f6503af3f101c62e09e0e1dd1e314df9bb83ddf32f38137692b7",
       "svg": "results/selectivity_h200_powered_qwen3_5_9b/figures/cache_state_fingerprint.svg",
-      "svg_sha256": "6322bd3d4c82737e3bb8646405ee7f5ff21cfa92c1089ab024e2b0eacbec5b04"
+      "svg_sha256": "4baf35ef7b2957797e87208c01e9f413fb067fb6c4bf79d59fb0247765ea7ec4"
     }
   ],
   "schema_version": 1,

@@ -186,8 +186,6 @@ def render_claim_table(assessment: dict[str, Any]) -> str:
         status = "supported" if c["passed"] else "pending"
         safe_name = name.replace("_", "\\_")
         safe_notes = c["notes"].replace("_", "\\_").replace("&", "\\&").replace("%", "\\%")
-        if len(safe_notes) > 220:
-            safe_notes = safe_notes[:217] + "..."
         lines.append(f"{safe_name} & {status} & {safe_notes} \\\\")
     lines.extend(["\\bottomrule", "\\end{tabularx}", "\\end{table}", ""])
     return "\n".join(lines)

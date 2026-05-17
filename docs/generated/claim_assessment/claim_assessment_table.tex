@@ -11,8 +11,8 @@
 behavioral\_cache\_sensitivity & supported & 7 of 9 instruction-tuned models show |SSEI| >= 0.01. \\
 safety\_minus\_capability\_selectivity & supported & 6 models have a registered policy with positive SSEI whose 95\% CI excludes 0 (0.01 threshold). \\
 cross\_family\_replication & supported & Families with positive instruction-tuned selectivity excluding 0: ['Llama', 'OLMo', 'Phi', 'Qwen']. \\
-targeted\_mitigation & pending & Policy-pinned cache restoration fraction is 1.000 on Refusal for both Qwen2.5-7B and Qwen3-9B. However, the registered mitigation gate requires system-role margin\_ci\_low >= 0.10 over user-role. Under the corrected p... \\
-causal\_localization & pending & Corrected per-prompt mean-of-ratios estimator shows no role-specific dissociation: Qwen3-9B system 0.355 [0.302,0.408] vs user 0.408 [0.355,0.464]; Qwen2.5-7B system 0.584 [0.520,0.647] vs user 0.584 [0.516,0.647]. CI... \\
+targeted\_mitigation & pending & Policy-pinned cache restoration fraction is 1.000 on Refusal for both Qwen2.5-7B and Qwen3-9B. However, the registered mitigation gate requires system-role margin\_ci\_low >= 0.10 over user-role. Under the corrected per-prompt mean-of-ratios estimator, system and user K+V restoration are comparable (Qwen3-9B: 0.355 vs 0.408; Qwen2.5-7B: 0.584 vs 0.584), so the role-specific margin gate cannot pass. \\
+causal\_localization & pending & Corrected per-prompt mean-of-ratios estimator shows no role-specific dissociation: Qwen3-9B system 0.355 [0.302,0.408] vs user 0.408 [0.355,0.464]; Qwen2.5-7B system 0.584 [0.520,0.647] vs user 0.584 [0.516,0.647]. CIs overlap heavily. Legacy ratio-of-means values (1.256 vs -0.692) were a Simpson's paradox artifact from heterogeneous per-prompt denominators. Phi-4 shows null result under kv\_int4\_sim (safety 0.985 vs 0.987), making the causal protocol inapplicable. \\
 alignment\_contrast & pending & Base-model alignment-contrast suite is recorded with only 2 sampled prompts per cell for qwen2\_5\_7b\_base; insufficient power to score. \\
 audit\_provenance\_complete & pending & Models with >= 95\% local-judge coverage: []; covered families: []. \\
 \bottomrule

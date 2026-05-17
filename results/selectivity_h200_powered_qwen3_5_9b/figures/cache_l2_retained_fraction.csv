@@ -1,0 +1,13 @@
+decode_step,l2_retained_fraction,policy
+0,1.0,none
+1,1.0,none
+0,0.9634509008521702,policy_pinned__budget128__sink8
+1,0.9995439744911492,policy_pinned__budget128__sink8
+0,0.9633534438264115,random_matched__budget128__seed991
+1,0.9995405689558782,random_matched__budget128__seed991
+0,0.9634765235897589,sink_recent__budget128__sink8
+1,0.9995456171374087,sink_recent__budget128__sink8
+0,0.9637201755076743,sliding_window__budget128
+1,0.9995523332178511,sliding_window__budget128
+0,0.9635010663246217,user_pinned__budget128__sink8
+1,0.999535950941922,user_pinned__budget128__sink8

@@ -149,7 +149,7 @@ def render_latex(rows: list[dict]) -> str:
             if ssei is None:
                 cells.append("--")
             else:
-                cells.append(f"${fmt(ssei)}$ \\tiny[{fmt(lo)}, {fmt(hi)}]")
+                cells.append(f"${fmt(ssei)}$ [{fmt(lo)}, {fmt(hi)}]")
         lines.append(" & ".join(cells) + " \\\\")
     lines.extend([
         "\\bottomrule",
