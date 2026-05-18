@@ -437,7 +437,8 @@ def fig_policy_delta_heatmap(df: pd.DataFrame, out: Path, metric: str = "refusal
         for j in range(delta.shape[1]):
             v = delta.values[i, j]
             if not np.isnan(v):
-                ax.text(j, i, f"{v:+.2f}", ha="center", va="center", fontsize=8)
+                _v = v if round(v, 2) != 0.0 else 0.0
+                ax.text(j, i, f"{_v:+.2f}", ha="center", va="center", fontsize=8)
     fig.colorbar(im, ax=ax, shrink=0.8, label=f"Δ {metric} vs baseline")
     ax.set_title(f"Cache-policy effect on {metric} (Δ vs none)")
     fig.savefig(out, format="png")

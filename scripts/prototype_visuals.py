@@ -152,7 +152,8 @@ def make_heatmap(all_data: dict) -> None:
             sig = ci_lo > 0 if not np.isnan(ci_lo) else False
             color = "black" if abs(val) < 0.06 else "white" if val > 0.06 else "white"
             weight = "bold" if sig else "normal"
-            label = f"{val:+.3f}" if sig else f"{val:+.3f}"
+            _v = val if round(val, 3) != 0.0 else 0.0
+            label = f"{_v:+.3f}"
             if sig:
                 label += " *"
             ax.text(j, i, label, ha="center", va="center", fontsize=7.5,

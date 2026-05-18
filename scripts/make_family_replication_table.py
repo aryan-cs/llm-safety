@@ -97,7 +97,8 @@ def fmt(value, digits=3) -> str:
     if value is None:
         return "--"
     try:
-        return f"{float(value):.{digits}f}"
+        s = f"{float(value):.{digits}f}"
+        return s.lstrip("-") if s.lstrip("-").replace("0", "").replace(".", "") == "" else s
     except (TypeError, ValueError):
         return "--"
 

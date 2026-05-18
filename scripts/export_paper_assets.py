@@ -605,7 +605,8 @@ def format_value(value: object) -> str:
     if value is None:
         return ""
     if isinstance(value, float):
-        return f"{value:.3f}"
+        s = f"{value:.3f}"
+        return s.lstrip("-") if s.lstrip("-").replace("0", "").replace(".", "") == "" else s
     return str(value)
 
 

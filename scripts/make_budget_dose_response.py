@@ -107,13 +107,16 @@ def render_latex_table(data: dict[str, Any], output_path: Path) -> None:
         label = model_data["label"]
         for i, row in enumerate(model_data["budgets"]):
             name = label if i == 0 else ""
-            ssei_str = f"{row['ssei']:.3f}" if row["ssei"] is not None else "---"
+            def _fz(v):
+                s = f"{v:.3f}"
+                return s.lstrip("-") if s.lstrip("-").replace("0", "").replace(".", "") == "" else s
+            ssei_str = _fz(row['ssei']) if row["ssei"] is not None else "---"
             ci_str = (
-                f"[{row['ci_low']:.3f}, {row['ci_high']:.3f}]"
+                f"[{_fz(row['ci_low'])}, {_fz(row['ci_high'])}]"
                 if row["ci_low"] is not None
                 else "---"
             )
-            sd_str = f"{row['safety_delta']:.3f}" if row["safety_delta"] is not None else "---"
+            sd_str = _fz(row['safety_delta']) if row["safety_delta"] is not None else "---"
             lines.append(f"{name} & {row['budget']} & {ssei_str} & {ci_str} & {sd_str} \\\\")
         lines.append("\\midrule")
     lines[-1] = "\\bottomrule"
