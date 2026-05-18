@@ -37,12 +37,19 @@ def _safe_json(path: Path) -> dict[str, Any]:
 
 
 def load_judgment_coverage(audit_dir: Path, model_key: str) -> dict[str, Any]:
-    """Load coverage from judgment JSONL files (any provider)."""
+    """Load coverage from judgment JSONL files (any provider).
+
+    Rows with ``parser_status == "blocked"`` represent API-level failures
+    (e.g. expired auth tokens) where the judge never ran.  These are
+    excluded from the attempt count so that coverage reflects the fraction
+    of *actual* judging attempts that parsed successfully.
+    """
     import glob
     pattern = str(audit_dir / f"selectivity_h200_powered_{model_key}_judgments.*.jsonl")
     files = glob.glob(pattern)
     total = 0
     parsed = 0
+    blocked = 0
     providers: set[str] = set()
     for fpath in files:
         provider = Path(fpath).stem.rsplit(".", 1)[-1] if "." in Path(fpath).stem else "unknown"
@@ -56,10 +63,14 @@ def load_judgment_coverage(audit_dir: Path, model_key: str) -> dict[str, Any]:
                 except json.JSONDecodeError:
                     continue
                 total += 1
-                if row.get("parser_status") == "parsed":
+                status = row.get("parser_status")
+                if status == "blocked":
+                    blocked += 1
+                elif status == "parsed":
                     parsed += 1
                     providers.add(provider)
-    return {"attempts": total, "parsed": parsed, "providers": sorted(providers)}
+    attempts = total - blocked
+    return {"attempts": attempts, "parsed": parsed, "blocked": blocked, "providers": sorted(providers)}
 
 
 def evaluate_model(metrics: dict[str, Any], audit_summary: dict[str, Any]) -> dict[str, Any]:

@@ -5,7 +5,7 @@
       "passed": true
     },
     "audit_provenance_complete": {
-      "notes": "Blinded audit with separate-family model judge(s) (claude, codex_gemini). Panel-wide: 3783/5938 rows parsed (64%); per-model range 29-99%. Models with judgment files: 11/12.",
+      "notes": "Blinded audit with separate-family model judge(s) (claude, codex_gemini). Panel-wide: 3783/3894 rows parsed (97%); per-model range 93-99%. Models with judgment files: 11/12.",
       "passed": true
     },
     "behavioral_cache_sensitivity": {
@@ -53,8 +53,8 @@
       "best_ssei_ci_high": -0.04839651222936525,
       "best_ssei_ci_low": -0.08755539369372221,
       "family": "OpenAI",
-      "judging_audit_rows": 842,
-      "judging_coverage_rate": 0.6235154394299287,
+      "judging_audit_rows": 535,
+      "judging_coverage_rate": 0.9813084112149533,
       "judging_parsed_rows": 525,
       "judging_providers": [
         "claude",
@@ -86,8 +86,8 @@
       "best_ssei_ci_high": 0.016605651792971677,
       "best_ssei_ci_low": 0.0019917450465000916,
       "family": "Mistral",
-      "judging_audit_rows": 994,
-      "judging_coverage_rate": 0.2917505030181087,
+      "judging_audit_rows": 300,
+      "judging_coverage_rate": 0.9666666666666667,
       "judging_parsed_rows": 290,
       "judging_providers": [
         "claude"
@@ -118,8 +118,8 @@
       "best_ssei_ci_high": 0.0910403141527061,
       "best_ssei_ci_low": 0.07594641669569623,
       "family": "Phi",
-      "judging_audit_rows": 1022,
-      "judging_coverage_rate": 0.6409001956947162,
+      "judging_audit_rows": 660,
+      "judging_coverage_rate": 0.9924242424242424,
       "judging_parsed_rows": 655,
       "judging_providers": [
         "claude",
@@ -197,8 +197,8 @@
       "best_ssei_ci_high": 0.022364906947039513,
       "best_ssei_ci_low": 0.010807127550643399,
       "family": "Qwen",
-      "judging_audit_rows": 980,
-      "judging_coverage_rate": 0.29591836734693877,
+      "judging_audit_rows": 300,
+      "judging_coverage_rate": 0.9666666666666667,
       "judging_parsed_rows": 290,
       "judging_providers": [
         "claude"
@@ -213,8 +213,8 @@
       "best_ssei_ci_high": 0.10106332668292323,
       "best_ssei_ci_low": 0.08325152273279075,
       "family": "Qwen",
-      "judging_audit_rows": 300,
-      "judging_coverage_rate": 0.9866666666666667,
+      "judging_audit_rows": 299,
+      "judging_coverage_rate": 0.9899665551839465,
       "judging_parsed_rows": 296,
       "judging_providers": [
         "claude"
