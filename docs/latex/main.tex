@@ -1,7 +1,7 @@
-\documentclass[11pt]{article}
+\documentclass{article}
 
-\usepackage[margin=1in]{geometry}
-\usepackage{times}
+\usepackage[preprint]{neurips_2025}
+
 \usepackage{amsmath}
 \usepackage{amssymb}
 \usepackage{booktabs}
@@ -10,9 +10,7 @@
 \usepackage{tabularx}
 \usepackage{xcolor}
 \usepackage{hyperref}
-\usepackage{natbib}
 \usepackage{url}
-\usepackage{fancyhdr}
 
 \hypersetup{
   colorlinks=true,
@@ -21,16 +19,7 @@
   urlcolor=blue!70!black
 }
 
-\setlength{\textfloatsep}{16pt plus 2pt minus 4pt}
-\setlength{\abovecaptionskip}{8pt plus 2pt minus 2pt}
-\setlength{\belowcaptionskip}{2pt plus 1pt minus 1pt}
-
-\pagestyle{fancy}
-\fancyhf{}
-\renewcommand{\headrulewidth}{0pt}
-\fancyfoot[C]{\thepage}
-
-\title{Safety Erasure Under KV-Cache Compression}
+\title{The Safety Tax of Cache Compression}
 
 \author{Aryan Gupta \\ \texttt{aryan.cs.app@gmail.com}}
 \date{}
@@ -199,6 +188,13 @@ A growing body of work isolates specific mechanisms in safety failure rather tha
   \label{fig:ssei-forest}
 \end{figure}
 
+\begin{figure}[p]
+  \centering
+  \maybeincludegraphic{../generated/active_primary/figures/ssei_heatmap.pdf}{0.92\linewidth}{SSEI heatmap across models and cache policies.}
+  \caption{SSEI heatmap across twelve models and five cache eviction policies. Color intensity encodes effect magnitude: orange cells indicate positive SSEI (safety selectively erased), blue-gray cells indicate negative SSEI. Starred values have 95\% CI lower bounds excluding zero. Gray cells marked N/A denote role-based policies inapplicable to the base model.}
+  \label{fig:ssei-heatmap}
+\end{figure}
+
 \textbf{Cross-family panel.} Figure~\ref{fig:ssei-forest} reports per-model per-policy $\ssei$ point estimates and 95\% bootstrap confidence intervals. The largest positive effects come from sliding-window cache eviction on Qwen3-8B ($\ssei = 0.092$, CI [0.083, 0.101]) and Qwen2.5-14B-Instruct ($\ssei = 0.089$, CI [0.073, 0.104]). Phi-4 shows a comparable effect ($\ssei = 0.084$, CI [0.076, 0.091]). The two MSM-adapted Qwen2.5-14B variants form a monotonic gradient in absolute $\ssei$: rules-spec at 0.050 [0.041, 0.059] and value-augmented at 0.023 [0.007, 0.037], compared with 0.089 [0.073, 0.104] for the non-MSM baseline. However, both MSM adapters lower baseline refusal from 64\% to $\sim$30\%, and the relative proportion of safety lost under sliding-window eviction is near-identical across all three ($\sim$42\%). The value-augmented variant's lower absolute SSEI reflects higher capability degradation (0.026) rather than better safety protection --- safety degradation is 0.049 for both MSM variants versus 0.103 for the baseline. The absolute gradient is thus a floor effect driven by baseline calibration, not mechanistic robustness. Smaller but significant positive effects appear under user-pinned eviction on Llama-3.1-8B-Instruct (0.024 [0.016, 0.031]), OLMo-3-7B-Instruct (0.026 [0.019, 0.033]), and Qwen2.5-7B-Instruct (0.017 [0.011, 0.022]).
 
 \maybeinputtable{../generated/active_primary/family_replication_table.tex}{Family-level $\ssei$ summary by cache policy.}
@@ -213,8 +209,8 @@ A growing body of work isolates specific mechanisms in safety failure rather tha
 
 \begin{figure}[t]
   \centering
-  \maybeincludegraphic{../generated/active_primary/figures/safety_capability_phase_portrait.pdf}{0.92\linewidth}{Safety degradation versus capability degradation by policy and budget.}
-  \caption{Safety loss versus capability loss for the anchor model (Qwen3-8B). Each row is one cache policy. A selective-safety pattern places safety loss visibly to the right of capability loss within a row.}
+  \maybeincludegraphic{../generated/active_primary/figures/safety_vs_capability_scatter.pdf}{0.92\linewidth}{Safety degradation versus capability degradation across all models.}
+  \caption{Safety degradation versus capability degradation under sliding-window eviction (budget 128) across all twelve panel models. Points above the diagonal have $\ssei > 0$: safety degrades more than capability. Most full-attention instruction-tuned models cluster in the upper-left quadrant, while locally-windowed models (Gemma, Mistral) sit near the origin.}
   \label{fig:safety-capability}
 \end{figure}
 

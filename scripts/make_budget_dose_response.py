@@ -131,7 +131,11 @@ def render_figure(data: dict[str, Any], output_path: Path) -> None:
         return
 
     fig, ax = plt.subplots(figsize=(6, 4))
-    colors = {"phi4": "#E8943A", "llama3_1_8b_instruct": "#FF8C42", "qwen2_5_14b_instruct": "#FFB347"}
+    styles = {
+        "phi4":                  {"color": "#CC5500", "linestyle": "-",  "marker": "o", "markersize": 7},
+        "llama3_1_8b_instruct":  {"color": "#FF8C42", "linestyle": "--", "marker": "s", "markersize": 7},
+        "qwen2_5_14b_instruct":  {"color": "#FFB347", "linestyle": ":",  "marker": "D", "markersize": 6},
+    }
     for model_key, model_data in data.items():
         budgets = [r["budget"] for r in model_data["budgets"]]
         sseis = [r["ssei"] for r in model_data["budgets"]]
@@ -141,12 +145,14 @@ def render_figure(data: dict[str, Any], output_path: Path) -> None:
             continue
         yerr_low = [s - l for s, l in zip(sseis, ci_lows)]
         yerr_high = [h - s for s, h in zip(sseis, ci_highs)]
+        s = styles.get(model_key, {"color": "#999999", "linestyle": "-", "marker": "o", "markersize": 7})
         ax.errorbar(
             budgets, sseis,
             yerr=[yerr_low, yerr_high],
             label=model_data["label"],
-            color=colors.get(model_key, "#999999"),
-            marker="o", capsize=4, linewidth=1.5,
+            color=s["color"], linestyle=s["linestyle"],
+            marker=s["marker"], markersize=s["markersize"],
+            capsize=4, linewidth=2,
         )
     ax.axhline(0, color="gray", linestyle="--", linewidth=0.5)
     ax.set_xlabel("Cache budget (tokens)")
